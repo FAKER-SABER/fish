@@ -1,0 +1,1078 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>982</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="font">
+       <font>
+        <family>Adobe Arabic</family>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_main">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <attribute name="title">
+        <string>主界面</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,7">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="font">
+           <font>
+            <family>Adobe Arabic</family>
+            <pointsize>16</pointsize>
+           </font>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_title">
+             <property name="font">
+              <font>
+               <family>宋体</family>
+               <pointsize>28</pointsize>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background:rgb(0, 255, 0)</string>
+             </property>
+             <property name="text">
+              <string>海鱼整形系统</string>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="6,1">
+            <item>
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QGridLayout" name="gridLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_showpic">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="picture.qrc">:/pic/window.jpg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string/>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_3">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_sys_status">
+                 <property name="font">
+                  <font>
+                   <family>宋体</family>
+                   <pointsize>22</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:rgb(0, 255, 0)</string>
+                 </property>
+                 <property name="text">
+                  <string>海鱼整形系统运行正常</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="maximumSize">
+             <size>
+              <width>512</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="title">
+             <string/>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4" stretch="2,5">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupBox_5">
+               <property name="title">
+                <string/>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,1">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3">
+                  <item>
+                   <widget class="QLabel" name="label_riqi">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>日期</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_riqi_show">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::Box</enum>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,3">
+                  <item>
+                   <widget class="QLabel" name="label_time">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>时间</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_time_show">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::Box</enum>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,3">
+                  <item>
+                   <widget class="QLabel" name="label_work">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>已整型的
+海鱼数量</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_work_show">
+                    <property name="font">
+                     <font>
+                      <family>宋体</family>
+                      <pointsize>16</pointsize>
+                     </font>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::Box</enum>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_6">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="title">
+                <string/>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <widget class="QPushButton" name="pushButton_start">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>宋体</family>
+                    <pointsize>16</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>机械臂启动/停止</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_reflash">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>宋体</family>
+                    <pointsize>16</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>机械臂重启</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_sys_restart">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>宋体</family>
+                    <pointsize>16</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>系统重启</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_EQ">
+       <attribute name="title">
+        <string>硬件管理</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox_7">
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,7">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="font">
+                <font>
+                 <family>宋体</family>
+                 <pointsize>24</pointsize>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color:rgb(0,255,0)</string>
+               </property>
+               <property name="text">
+                <string>海鱼整形系统管理界面</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_8">
+               <property name="title">
+                <string/>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_7">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QSplitter" name="splitter">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <widget class="QGroupBox" name="groupBox_9">
+                   <property name="font">
+                    <font>
+                     <family>宋体</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="title">
+                    <string>硬件检测</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,3">
+                    <item>
+                     <layout class="QVBoxLayout" name="verticalLayout_8">
+                      <item>
+                       <widget class="QLabel" name="label_2">
+                        <property name="text">
+                         <string>工业相机：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_3">
+                        <property name="text">
+                         <string>PLC：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_4">
+                        <property name="text">
+                         <string>硬件3：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_5">
+                        <property name="text">
+                         <string>硬件4：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_6">
+                        <property name="text">
+                         <string>硬件5：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_7">
+                        <property name="text">
+                         <string>硬件6：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_8">
+                        <property name="text">
+                         <string>硬件7：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_9">
+                        <property name="text">
+                         <string>硬件8：</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <layout class="QVBoxLayout" name="verticalLayout_7">
+                      <item>
+                       <widget class="QLabel" name="label_15">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_12">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_10">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_14">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_11">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_17">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_13">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_16">
+                        <property name="frameShape">
+                         <enum>QFrame::Box</enum>
+                        </property>
+                        <property name="text">
+                         <string>无</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QGroupBox" name="groupBox_10">
+                   <property name="maximumSize">
+                    <size>
+                     <width>480</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>宋体</family>
+                     <pointsize>16</pointsize>
+                    </font>
+                   </property>
+                   <property name="title">
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_9" stretch="3,2">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_11">
+                      <property name="title">
+                       <string>海鱼规格选择</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_10" stretch="1,1,4">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QComboBox" name="comboBox">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,3,1,3">
+                         <item>
+                          <widget class="QLabel" name="label_18">
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <family>宋体</family>
+                             <pointsize>14</pointsize>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>长度：</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_19">
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <family>宋体</family>
+                             <pointsize>14</pointsize>
+                            </font>
+                           </property>
+                           <property name="frameShape">
+                            <enum>QFrame::Box</enum>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_20">
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <family>宋体</family>
+                             <pointsize>14</pointsize>
+                            </font>
+                           </property>
+                           <property name="text">
+                            <string>宽度：</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_21">
+                           <property name="maximumSize">
+                            <size>
+                             <width>16777215</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="font">
+                            <font>
+                             <family>宋体</family>
+                             <pointsize>14</pointsize>
+                            </font>
+                           </property>
+                           <property name="frameShape">
+                            <enum>QFrame::Box</enum>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="label_22">
+                         <property name="text">
+                          <string>对应海鱼图片展示</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_12">
+                      <property name="title">
+                       <string>海鱼规格设置</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="1,1,1,1">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,3">
+                         <item>
+                          <widget class="QLabel" name="label_23">
+                           <property name="text">
+                            <string>品种：</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLineEdit" name="lineEdit">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>50</height>
+                            </size>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,3">
+                         <item>
+                          <widget class="QLabel" name="label_24">
+                           <property name="text">
+                            <string>长度：</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLineEdit" name="lineEdit_2">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>50</height>
+                            </size>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="1,3">
+                         <item>
+                          <widget class="QLabel" name="label_25">
+                           <property name="text">
+                            <string>宽度：</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLineEdit" name="lineEdit_3">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>50</height>
+                            </size>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1">
+                         <item>
+                          <widget class="QPushButton" name="pushButton">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>50</height>
+                            </size>
+                           </property>
+                           <property name="text">
+                            <string>添加海鱼规格</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="pushButton_2">
+                           <property name="minimumSize">
+                            <size>
+                             <width>0</width>
+                             <height>50</height>
+                            </size>
+                           </property>
+                           <property name="text">
+                            <string>删除海鱼规格</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+  <include location="picture.qrc"/>
+ </resources>
+ <connections/>
+</ui>

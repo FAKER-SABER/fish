@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="pic">
+    <file>scu.png</file>
+    <file>window.jpg</file>
+  </qresource>
+</RCC>
