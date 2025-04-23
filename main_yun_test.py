@@ -292,7 +292,7 @@ while True:
 
 
 
-
+#test
 # #PLC
 # PLC = PLCWriteRead("192.168.0.1", name='1200')
 # plcifc=PLC.ConnectPlc()
