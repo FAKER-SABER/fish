@@ -88,6 +88,7 @@ class PLCWriteRead:
         self.PLC.connect(self.ip, self.rackandslot[0], self.rackandslot[1])  # 连接plc,参数分别为ip ,卡号,槽号。200smart为0和1
         state = self.PLC.get_connected()  # 用来判读是否连接成功 返回值为true 和false
         print(state)
+        self.WritePlcMK(2, 1, form='bit', bit=6)
         return state
     def ReadPlcMK(self, begin_place, long):
         bytes = self.PLC.read_area(client.Areas.MK, 0, begin_place, long)

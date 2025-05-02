@@ -70,6 +70,7 @@ def errormach_follow(x_p,x_n):#当前位置 目标位置
 if __name__ == '__main__':
     PLC = plc_mc.PLCWriteRead("192.168.0.1", name='1200')
     PLC.ConnectPlc()
+
     # while True:
     #     mc_go_home()
     #     mc_move_to_point(point_set=[400,0,60,None,None])
