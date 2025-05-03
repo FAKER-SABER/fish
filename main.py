@@ -6,7 +6,7 @@ import threading
 import numpy as np
 from PyQt5.QtGui import QIcon
 # 导入自定义模块
-# from windows import QtUI #ui
+from windows import QtUI #ui
 from PLC.plcWriteRead import *#PLC
 from recognition import recognize_ellipses
 from hik_camera import call_back_get_image, start_grab_and_get_data_size, close_and_destroy_device, set_Value, \
@@ -146,7 +146,7 @@ def hik_camera_get():
 
 
 #生成窗口对象
-# MainWindow = QtUI.MainWindow()
+MainWindow = QtUI.MainWindow()
 #window标志位
 window_flag=[0,0,0]
 points_list = []

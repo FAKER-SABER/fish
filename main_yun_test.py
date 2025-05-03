@@ -6,8 +6,9 @@ import threading
 import numpy as np
 from PyQt5.QtGui import QIcon
 # 导入自定义模块
-# from windows import QtUI #ui
+from windows import QtUI #ui
 from PLC.plcWriteRead import *#PLC
+
 from recognition import recognize_ellipses
 from hik_camera import call_back_get_image, start_grab_and_get_data_size, close_and_destroy_device, set_Value, \
     get_Value, image_control
@@ -15,13 +16,13 @@ from MvImport.MvCameraControl_class import *
 
 from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
 #生成窗口对象
-# MainWindow = QtUI.MainWindow()
+
 plc = plc_connect()
 plc.PLC_cov_vRead()
 mc_go_home(plc)
 mc_move_to_point(plc,point_set=[400, 0, 0, None, None])
 #window标志位
-window_flag=[0,0,0]
+
 points_list = []
 lock = threading.Lock()
 # 海康相机图像获取线程
@@ -236,6 +237,8 @@ camera_mode = 'hik'  # 'test':测试模式,'hik':海康相机,'video':USB相机�
 
 fish_group = fish_grab()
 points_list = []
+app = QtUI.QtWidgets.QApplication(sys.argv)
+MainWindow = QtUI.MainWindow(plc)
 
 camera_image = None
 if camera_mode == 'test':
@@ -246,12 +249,17 @@ elif camera_mode == 'hik':
 
 
 while camera_image is None:
-    window_flag[0] = 0
+
     print("等待图像获取...")
     time.sleep(0.5)
 
+MainWindow.show()
+
 
 while True:
+
+
+    sys.exit(app.exec_())
     time.sleep(0.5)
     with lock:
         fish_group.get_points_list(points_list)

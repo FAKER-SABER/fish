@@ -2,6 +2,7 @@ import PLC.plcWriteRead as plc_mc
 import time as t
 import pid_result as pid_r
 
+import sys
 def mc_control(point_set, mode, pid_pram, target_parm):
     PLC.PLC_RAS(point_set, mode, pid_pram, target_parm)
 
@@ -29,12 +30,7 @@ def mc_wait():
 if __name__ == '__main__':
     PLC = plc_mc.PLCWriteRead("192.168.0.1", name='1200')
     PLC.ConnectPlc()
-    # while True:
-    #     mc_go_home()
-    #     mc_move_to_point(point_set=[400,0,60,None,None])
-    #     t.sleep(2)
-    #     mc_follow_line([20,0.12,7.9,0.1, 1.0, 0.8, 4.0], [0.1, 0.1], 100, 0)
-    #     t.sleep(2)
+
     mc_go_home()
 
     mc_move_to_point(point_set=[600, 0, 60, None, None])

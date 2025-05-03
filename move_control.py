@@ -1,7 +1,9 @@
 import PLC.plcWriteRead as plc_mc
 import time as t
 import pid_result as pid_r
-
+import sys
+from windows import QtUI #ui
+from PLC.plcWriteRead import *#PLC
 def plc_connect(ip="192.168.0.1", name='1200'):
     PLC = plc_mc.PLCWriteRead(ip, name)
     PLC.ConnectPlc()
@@ -70,20 +72,23 @@ def errormach_follow(x_p,x_n):#当前位置 目标位置
 if __name__ == '__main__':
     PLC = plc_mc.PLCWriteRead("192.168.0.1", name='1200')
     PLC.ConnectPlc()
-
+    app = QtUI.QtWidgets.QApplication(sys.argv)
+    MainWindow = QtUI.MainWindow(PLC)
+    MainWindow.show()
+    sys.exit(app.exec_())
     # while True:
     #     mc_go_home()
     #     mc_move_to_point(point_set=[400,0,60,None,None])
     #     t.sleep(2)
     #     mc_follow_line([20,0.12,7.9,0.1, 1.0, 0.8, 4.0], [0.1, 0.1], 100, 0)
     #     t.sleep(2)
-    mc_go_home(PLC)
-
-    mc_move_to_point(PLC,point_set=[250, 0, 60, None, None])
-    t.sleep(3)
-    mc_follow_line(PLC,[9.0,0.12,5.0,0.1, 1.0, 0.8, 5.0], [0.25 , 0.1], 100, 0)
-    print(1)
-    pid_r.plot_pid_result()
+    # mc_go_home(PLC)
+    #
+    # mc_move_to_point(PLC, point_set=[250, 0, 60, None, None])
+    # t.sleep(3)
+    # mc_follow_line(PLC, [9.0,0.12,5.0,0.1, 1.0, 0.8, 5.0], [0.25 , 0.1], 100, 0)
+    # print(1)
+    # pid_r.plot_pid_result()
 
 #20 0.12 8.0 0.1 0.8 0.8 4.0
 #
