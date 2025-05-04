@@ -20,7 +20,7 @@ from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_lin
 plc = plc_connect()
 plc.PLC_cov_vRead()
 mc_go_home(plc)
-mc_move_to_point(plc,point_set=[400, 0, 0, None, None])
+mc_move_to_point(plc,point_set=[0, 0, 0, None, None])
 #window标志位
 
 points_list = []
@@ -111,7 +111,7 @@ def hik_camera_get():
           get_Value(cam, param_type="float_value", node_name="AcquisitionFrameRate"))
 
     # 设置设备的一些参数
-    set_Value(cam, param_type="float_value", node_name="ExposureTime", node_value=600)  # 曝光时间
+    set_Value(cam, param_type="float_value", node_name="ExposureTime", node_value=1060)  # 曝光时间
     set_Value(cam, param_type="float_value", node_name="Gain", node_value=17.9)  # 增益值
     set_Value(cam, param_type="float_value", node_name="AcquisitionFrameRate", node_value=0.5)  # 采集帧率
     # 开启设备取流
@@ -179,7 +179,7 @@ class fish_grab():
                 else:
 
                     for fi in range(0,fish_total):
-                        if abs(point[1]-self.fish_list[fi][1]) <= 5 and abs(point[4]-self.fish_list[fi][4]) <= 15:
+                        if abs(point[1]-self.fish_list[fi][1]) <= 10 and abs(point[4]-self.fish_list[fi][4]) <= 50:
                             print(fi,"same")
                             self.fish_list[fi] = point
 
@@ -211,7 +211,7 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.77+scov_vlast*0.3)*(current_time-fish[6])*1000,  # x_n
+                    fish[4]+(scov_v*0.9+scov_vlast*0.25)*(current_time-fish[6])*1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
                     0  # state
@@ -237,8 +237,8 @@ camera_mode = 'hik'  # 'test':测试模式,'hik':海康相机,'video':USB相机�
 
 fish_group = fish_grab()
 points_list = []
-app = QtUI.QtWidgets.QApplication(sys.argv)
-MainWindow = QtUI.MainWindow(plc)
+# app = QtUI.QtWidgets.QApplication(sys.argv)
+# MainWindow = QtUI.MainWindow(plc)
 
 camera_image = None
 if camera_mode == 'test':
@@ -253,13 +253,13 @@ while camera_image is None:
     print("等待图像获取...")
     time.sleep(0.5)
 
-MainWindow.show()
+# MainWindow.show()
 
 
 while True:
 
 
-    sys.exit(app.exec_())
+    # sys.exit(app.exec_())
     time.sleep(0.5)
     with lock:
         fish_group.get_points_list(points_list)
@@ -278,7 +278,7 @@ while True:
             for fish_num in range(fish_all):
                 plc.PLC_cov_vRead()
                 fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                if 100 < fish_group.fish_list[fish_num][4] < 300 :
+                if 100 < fish_group.fish_list[fish_num][4] < 900 :
                     print("进行整形")
                     pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
                     mc_follow_line(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120, - fish_group.fish_list[fish_num][2]+90)##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
@@ -288,7 +288,7 @@ while True:
                     # continue
                     continue
                     # mc_move_to_point(plc, point_set=[400, 0, 0, None, None])
-                if fish_group.fish_list[fish_num][4] > 400 :
+                if fish_group.fish_list[fish_num][4] > 1000 :
                     delete_set.append(fish_num)
             for delete_num in delete_set:
                 fish_group.delete_fish(delete_num)

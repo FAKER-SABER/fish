@@ -26,7 +26,7 @@ cv2.createTrackbar('High S', 'Trackbars', high_S, 255, nothing)
 cv2.createTrackbar('High V', 'Trackbars', high_V, 255, nothing)
 
 # Load image
-image_path = '../images/image.jpg'
+image_path = '../images/11.jpg'
 original_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 if original_image is None:
     print(f"Error: Could not read image from {image_path}")

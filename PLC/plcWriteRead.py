@@ -222,7 +222,7 @@ class PLCWriteRead:
 
     def X_RUN(self,target_xap):
         # 向PLC写入目标的X轴坐标
-        self.WritePlcDB(13, self.x_aP, target_xap+100, form='real')
+        self.WritePlcDB(13, self.x_aP, target_xap+300, form='real')
         self.WritePlcMK(12, 1, form='bit', bit=self.x_runb)
 
     def Y_RUN(self, target_yap):

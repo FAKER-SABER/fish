@@ -1,4 +1,4 @@
-
+import threading
 import os
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QTimer, QTime, QObject, pyqtSignal, QDateTime, QEventLoop
@@ -14,58 +14,42 @@ import PLC.plcWriteRead as plc_mc
 import time as t
 import pid_result as pid_r
 
+class Worker(QObject):
+    def __init__(self, plc):
+        super().__init__()
+        self.result_signal = pyqtSignal(str)
+        # 用于控制线程是否暂停的标志
+        self.paused = False
+        # 用于线程间同步的事件对象
+        self.pause_event = threading.Event()
+        self.pause_event.set()
+        self.PLC = plc
 
-# class new_win(QDialog, Ui_Dialog):
-#     def __init__(self):
-#         super().__init__()
-#         self.setupUi(self)
-#         # self.load_item()
-#         self.load_item()
-#         self.pushButton_add.clicked.connect(self.add_items)
-#         self.pushButton_del.clicked.connect(self.delete_items)
-#
-#     def load_item(self):
-#         # if os.path.exists('./windows/海鱼型号.txt'):
-#         with open('./windows/海鱼型号.txt', 'r') as file:
-#             for line in file:
-#                 item = line.strip()
-#                 self.comboBox.addItem(item)
-#
-#     def add_items(self):
-#         # 添加新选项到 ComboBox中
-#         # data = f"选项{self.comboBox.count() + 1}"
-#         data = self.lineEdit.text()
-#         # print(data)
-#         self.comboBox.addItem(data)
-#
-#         # 可选：清空LineEdit中的文本
-#         self.lineEdit.clear()
-#         # 保存当前选项到文件
-#         with open('./windows/海鱼型号.txt', 'a') as file:
-#             file.write(data + '\n')
-#
-#     def delete_items(self):
-#         data = self.lineEdit.text()
-#         # 在ComboBox中查找并删除相关的项
-#         index = self.combo_box.findText(data)
-#         if index != -1:
-#             self.combo_box.removeItem(index)
-#         # 可选：清空LineEdit中的文本
-#         self.line_edit.clear()
-#
-#         try:
-#             with open("./windows/海鱼型号.txt", 'r') as file:
-#                 lines = file.readlines()
-#             with open("./windows/海鱼型号.txt", 'w') as file:
-#                 for line in lines:
-#                     if data not in line.strip():
-#                         file.write(line)
-#             QMessageBox.information(self, '成功', '删除完成！')
-#         except FileNotFoundError:
-#             QMessageBox.warning(self, '错误', f'找不到文件 {"./windows/海鱼型号.txt"}')
-#         except Exception as e:
-#             QMessageBox.critical(self, '错误', f'发生错误：{str(e)}')
+    def do_work(self):
+        print("开始线程")
+        while True:
+            # 检查是否暂停，如果暂停则等待
 
+            self.pause_event.wait()
+            if self.paused:
+
+                continue
+            # 模拟耗时操作
+            print("开始")
+
+            mc_go_home(self.PLC)
+            print(self.paused)
+            if self.paused:
+                break
+            mc_move_to_point(self.PLC, point_set=[250, 0, 60, None, None])
+            print(self.paused)
+            if self.paused:
+                break
+            t.sleep(3)
+            mc_follow_line(self.PLC, [9.0, 0.12, 5.0, 0.1, 1.0, 0.8, 5.0], [0.25, 0.1], 100, 0)
+            print(1)
+            pid_r.plot_pid_result()
+            break
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, plc):
@@ -73,23 +57,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)  # 使用Ui_MainWindow.setupUi(self, self)来初始化UI
         self.PLC = plc
         self.mcflag=0
-        #self.PLC = PLCWriteRead('192.168.0.1', name='1200')
-
-        # self.CAM_Get_IMG = CAM_Get_IMG
-        # self.CAM_Detect = CAM_Detect
-        # self.connect_EQtimes = 0
-        # self.load_item()
-        # self.processing_start()
 
         self.pushButton_start.clicked.connect(self.start_SYSTEM)
         self.pushButton_stop.clicked.connect(self.stop_SYSTEM)
-        self.pushButton_wait.clicked.connect(self.reflash_SYSTEM)
-        # self.pushButton_change.clicked.connect(self.open_widget)
-
-        # 将上位机上的系统重启按钮与硬件使用进程相关联。
-        # self.pushButton_sys_restart.clicked.connect(start_camera_process)
-        # self.pushButton_sys_restart.clicked.connect(start_plc_process)
-        # self.pushButton_sys_restart.clicked.connect(restart_process)
+        self.pushButton_wait.clicked.connect(self.wait_SYSTEM)
 
         # 连接 QComboBox 的信号 activated 到槽函数 onActivated
 
@@ -106,23 +77,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer3.start(5000)
 
     def start_SYSTEM(self):
+        print("开始线程")
+        self.worker = Worker(self.PLC)
+        self.worker.paused = False
+        self.worker.pause_event.set()
+        # self.worker.result_signal.connect(self.handle_result)
+        self.thread = threading.Thread(target=self.worker.do_work)
+        self.thread.start()
 
-        print("开始")
 
-        mc_go_home(self.PLC)
 
-        mc_move_to_point(self.PLC, point_set=[250, 0, 60, None, None])
-        t.sleep(3)
-        mc_follow_line(self.PLC, [9.0, 0.12, 5.0, 0.1, 1.0, 0.8, 5.0], [0.25, 0.1], 100, 0)
-        print(1)
-        pid_r.plot_pid_result()
 
 
         return 0
     def stop_SYSTEM(self):
         mc_wait(self.PLC)
-    def reflash_SYSTEM(self):
-        pass
+    def wait_SYSTEM(self):
+        self.worker.paused = True
+        self.worker.pause_event.clear()
+        self.pushButton_stop.setEnabled(False)
+        self.pushButton_start.setEnabled(True)
+
         return 0
         # global window_flag
         # window_flag[2]=1

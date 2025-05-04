@@ -37,6 +37,35 @@ def errormach_follow(x_p,x_n):#当前位置 目标位置
     errorpotion=x_p-x_n
     follow_time=3.0
     pid_set=[]
+    if -1000 < errorpotion <= -925:
+        pid_set = [10, 0.1, 4.4, 0.1, 1.0, 0.8, follow_time]
+
+    if -925 < errorpotion <= -875:
+        pid_set = [10, 0.1, 4.4, 0.1, 1.0, 0.8, follow_time]
+    if -875 < errorpotion <= -825:
+        pid_set = [10, 0.1, 4.4, 0.1, 1.0, 0.8, follow_time]
+    if -825 < errorpotion <= -775:
+        pid_set = [10, 0.1, 4.4, 0.1, 1.0, 0.8, follow_time]
+    if -775 < errorpotion <= -725:
+        pid_set = [10, 0.1, 4.4, 0.1, 1.0, 0.8, follow_time]
+    if -725<errorpotion<=-675:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -675<errorpotion<=-625:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -625<errorpotion<=-575:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -575<errorpotion<=-525:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -525<errorpotion<=-475:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -475<errorpotion<=-425:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -425<errorpotion<=-375:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -375<errorpotion<=-325:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
+    if -325<errorpotion<=-275:
+        pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
     if -275<errorpotion<=-225:
         pid_set=[10,0.1,4.4,0.1, 1.0, 0.8, follow_time]
     if -225<errorpotion<=-175:
@@ -67,6 +96,31 @@ def errormach_follow(x_p,x_n):#当前位置 目标位置
         pid_set = [11, 0.2, 5, 0.1, 1.0, 0.8,follow_time]
     if 425 < errorpotion <= 475:
         pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8,follow_time]
+    if 425 < errorpotion <= 475:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 475 < errorpotion <= 525:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 525 < errorpotion <= 575:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 575 < errorpotion <= 625:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 625 < errorpotion <= 675:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 675 < errorpotion <= 725:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 725 < errorpotion <= 775:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 775 < errorpotion <= 825:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 825 < errorpotion <= 875:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 875 < errorpotion <= 925:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 925 < errorpotion <= 975:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+    if 975 < errorpotion <= 1025:
+        pid_set = [11, 0.3, 5.5, 0.1, 1.0, 0.8, follow_time]
+
     return pid_set
 
 if __name__ == '__main__':

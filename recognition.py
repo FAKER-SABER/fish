@@ -6,8 +6,8 @@ from sympy import Symbol, solve
 
 
 # PARAMETERS
-low_H, low_S, low_V = 111, 16, 80
-high_H, high_S, high_V = 160, 78, 121
+low_H, low_S, low_V = 58, 23, 80
+high_H, high_S, high_V = 161, 168, 142
 min_area = 50000
 max_area = 120000
 # 相机内参矩阵
