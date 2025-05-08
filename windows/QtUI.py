@@ -58,6 +58,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PLC = plc
         self.mcflag=0
 
+
+
         self.pushButton_start.clicked.connect(self.start_SYSTEM)
         self.pushButton_stop.clicked.connect(self.stop_SYSTEM)
         self.pushButton_wait.clicked.connect(self.wait_SYSTEM)

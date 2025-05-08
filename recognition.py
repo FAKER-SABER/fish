@@ -88,8 +88,8 @@ def pixel_to_camera(pixel_x, pixel_y, internal_reference):
 
 def camera_to_world(X_camera, Y_camera, ts):
     # 单位mm
-    X_offset = -10
-    Y_offset = 515
+    X_offset = -50
+    Y_offset = 400
     X_world = X_offset - X_camera
     Y_world = Y_camera - Y_offset
     return (X_world, Y_world)

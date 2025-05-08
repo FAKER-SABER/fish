@@ -14,7 +14,7 @@ from hik_camera import call_back_get_image, start_grab_and_get_data_size, close_
     get_Value, image_control
 from MvImport.MvCameraControl_class import *
 
-from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
+from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line,mc_follow_line_thread, mc_wait, plc_connect,errormach_follow
 #生成窗口对象
 
 plc = plc_connect()
@@ -170,7 +170,7 @@ class fish_grab():
 
             for point in points_list:
                 fish_total =len(self.fish_list)
-                point = (point[0], point[1], point[2], point[3], point[0], point[1], point[3], 0) # x y theta time x_n y_n ct num 0
+                point = (point[0], point[1], point[2], point[3], point[0], point[1], point[3], 0) # x y theta time x_n y_n ct num  0
                 if fish_total == 0:
 
                     self.fish_list.append(point)
@@ -179,7 +179,7 @@ class fish_grab():
                 else:
 
                     for fi in range(0,fish_total):
-                        if abs(point[1]-self.fish_list[fi][1]) <= 10 and abs(point[4]-self.fish_list[fi][4]) <= 50:
+                        if abs(point[1]-self.fish_list[fi][1]) <= 10 and abs(point[4]-self.fish_list[fi][4]) <= 250:
                             print(fi,"same")
                             self.fish_list[fi] = point
 
@@ -194,7 +194,7 @@ class fish_grab():
         #print(f"获取最新鱼群列表{self.fish_list},\n鱼数量{self.fish_list.__len__()}")
         return 1
 
-    def fish_list_update(self,scov_v,scov_vlast):
+    def fish_list_update(self,scov_v,scov_vlast,pulse_now=0):
         current_time = time.time()
         print(f"当前时间{current_time}")
         print(len(self.fish_list))
@@ -211,7 +211,8 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.9+scov_vlast*0.25)*(current_time-fish[6])*1000,  # x_n
+                    fish[4]+(scov_v*0.8+scov_vlast*0.25)*(current_time-fish[6])*1000,  # x_n
+                    # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
                     0  # state
@@ -255,6 +256,10 @@ while camera_image is None:
 
 # MainWindow.show()
 
+# 创建一个锁
+state_lock = threading.Lock()
+# 共享的state变量
+state = 1
 
 while True:
 
@@ -270,6 +275,8 @@ while True:
         # print(points_list)
         if len(fish_group.fish_list) ==0:
             print("没有鱼")
+            mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
+
 
         else:
             print(fish_group.fish_list)
@@ -281,7 +288,12 @@ while True:
                 if 100 < fish_group.fish_list[fish_num][4] < 900 :
                     print("进行整形")
                     pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
-                    mc_follow_line(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120, - fish_group.fish_list[fish_num][2]+90)##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
+                    # mc_follow_line_thread(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2])##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
+                    follow_thread =threading.Thread(target=mc_follow_line_thread, args=(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2]), daemon=True).start()
+                    try:
+                        follow_thread.start()
+                    except:
+                        print("线程启动失败")
                     delete_set.append(fish_num)
                     # fish_group.delete_fish(fish_num)
                     # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)

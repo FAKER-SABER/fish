@@ -53,7 +53,8 @@ class PLCWriteRead:
         self.y_PP = 40
         self.y_VP = 44
         self.cov_VP = 48
-
+        self.pulseP=64
+        self.pulse_highV=68
         self.x_runb = 6
         self.y_runb = 4
         self.zf_runb = 5
@@ -71,6 +72,7 @@ class PLCWriteRead:
         self.ks = 0.7
         self.x_v=0
         self.x_p=0
+        self.pulse=0
     def foundname(self, name):
         if name == '200smart':
             self.rackandslot = [0, 1]
@@ -222,7 +224,7 @@ class PLCWriteRead:
 
     def X_RUN(self,target_xap):
         # 向PLC写入目标的X轴坐标
-        self.WritePlcDB(13, self.x_aP, target_xap+300, form='real')
+        self.WritePlcDB(13, self.x_aP, target_xap+100, form='real')
         self.WritePlcMK(12, 1, form='bit', bit=self.x_runb)
 
     def Y_RUN(self, target_yap):
@@ -274,64 +276,12 @@ class PLCWriteRead:
         # 用于保存结果的列表
         results = []
         time_0=t.time()
+        error = 0.1
         n=0
-        # while (t.time() - start_time) < simulation_time:
-        #
-        #     ##执行整形
-        #     if (t.time() - start_time) > getch_time and n == 0 :
-        #         self.getch_RUN()
-        #         n=1
-        #         print("getch_RUN")
-        #
-        #     # 获取当前目标位置（带时间同步的实时更新）
-        #     x_p = self.ReadPlcDB(13, self.x_PP, 1, form='real') / 1000
-        #     x_v = self.ReadPlcDB(13, self.x_VP, 1, form='real') / 1000
-        #     # self.PLC_cov_vRead()
-        #     # target.v=self.cov_v*0.7+self.cov_vlast*0.3
-        #     # target.v = 0.1
-        #     target_pos = target.get_pos()
-        #
-        #     show_time = t.time()
-        #
-        #     # 获取执行器状态
-        #     current_pos, current_vel =x_p, x_v
-        #     print(x_p, x_v)  # 输出浮点数
-        #
-        #     # 执行PID控制计算（current_pos/vel由外部系统反馈）
-        #     control_vel = pid.update(target_pos, current_pos, current_vel)
-        #
-        #     # 更新速度
-        #     # PLC_set(control_vel)
-        #     self.WritePlcDB(13, self.target_xVP, (control_vel * 1000), form='real')
-        #     # 记录结果
-        #     results.append({
-        #                 "Time": show_time-time_0,
-        #                 "Target Position": target_pos,
-        #                 "Current Position": current_pos,
-        #                 "Current Velocity": current_vel,
-        #                 "Control Velocity": control_vel,
-        #                 "error": target_pos - current_pos
-        #             })
-        #
-        #             # 结果显示
-        #     print(
-        #                 f"当前时间: {show_time:.4f}, "
-        #                 f"目标位置: {target_pos:.4f}, "
-        #                 f"当前位置: {current_pos:.4f}, "
-        #                 f"当前速度: {current_vel:.4f}, "
-        #                 f"控制速度: {control_vel:.4f}"
-        #             )
-        #
-        #             # 保持控制周期（硬件实现时需要精确计时）
-        #     t.sleep(max(0, sample_interval - (t.time() % sample_interval)))
-        #
-        #         # 将结果保存到 Excel 文件
-        #     df = pd.DataFrame(results)
-        #     df.to_excel("pid_control_results.xlsx", index=False)
-        #     print("程序结束，结果已保存到 pid_control_results.xlsx")
+
         while (t.time() - start_time) < simulation_time:
             # 获取当前目标位置（带时间同步的实时更新）
-            if (t.time() - start_time) > getch_time and n == 0:
+            if abs(error) < 0.02 and n == 0:
                 self.getch_RUN()
                 n = 1
             target_pos = target.get_pos()
@@ -344,7 +294,7 @@ class PLCWriteRead:
 
             # 执行PID控制计算（current_pos/vel由外部系统反馈）
             control_vel = pid.update(target_pos, current_pos, current_vel)
-
+            error = target_pos - current_pos
             # 更新速度
             self.WritePlcDB(13, 24, (control_vel * 1000), form='real')
 
@@ -468,7 +418,7 @@ class PLCWriteRead:
         print(f"[{timestamp}] 数据已保存 -> {excel_path}")
 
     def PLC_cov_vRead(self):
-
+        self.pulse=self.ReadPlcDB(13, 64, 1, form='real')+(self.ReadPlcDB(13, 68, 1, form='real')-1)*65536
         cov_vnow = self.ReadPlcDB(13, self.cov_VP, 1, form='real')
         if abs(cov_vnow)<0.001:
             cov_vnow = 0
@@ -478,7 +428,7 @@ class PLCWriteRead:
         self.cov_v =cov_vnow / 1000
 
 
-        return [ self.x_p, self.x_v, self.cov_v]
+        return [ self.x_p, self.x_v, self.cov_v,self.pulse]
 
     def PLC_RAS(self,PLC_SET,mode,PID_PARM,target_parm ):
 ##PLC进程函数，读取plc标志位，根据标志位判断执行状态，再决定是否发送数据
