@@ -27,17 +27,21 @@ def mc_move_to_point(PLC, point_set):
 state_lock = threading.Lock()
 # 共享的state变量
 state = 1
-def mc_follow_line_thread(PLC, pid_pram,target_parm,y,zf):##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
-    global state_lock
-    global state
-    with state_lock:
-        if state==1:
-            state=0
-            point_set = [0, y, zf, 0, 0]  # [x,y,zf,none,none]
-            PLC.PLC_RAS(point_set, 2, pid_pram, target_parm)
-            state=1
-        else:
-            pass
+# arg_param = [pid_pram,target_parm,y,zf]
+# def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
+#     global lock
+#     global state
+#     global arg_param
+#     with lock:
+#         if arg_param is not None:
+#             while True:
+#                 if state==1:
+#                     state=0
+#                     point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
+#                     PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
+#                     state=1
+#                 else:
+#                     pass
 def mc_follow_line(PLC, pid_pram,target_parm,y,zf):##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
     point_set = [0,y,zf,0,0]#[x,y,zf,none,none]
     PLC.PLC_RAS(point_set, 2, pid_pram, target_parm)

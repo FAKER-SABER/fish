@@ -14,7 +14,11 @@ from hik_camera import call_back_get_image, start_grab_and_get_data_size, close_
     get_Value, image_control
 from MvImport.MvCameraControl_class import *
 
-from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line,mc_follow_line_thread, mc_wait, plc_connect,errormach_follow
+from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
+points_list = []
+lock = threading.Lock()
+arg_param = []
+is_update=0
 #生成窗口对象
 
 plc = plc_connect()
@@ -23,8 +27,7 @@ mc_go_home(plc)
 mc_move_to_point(plc,point_set=[0, 0, 0, None, None])
 #window标志位
 
-points_list = []
-lock = threading.Lock()
+
 # 海康相机图像获取线程
 def hik_camera_get():
     # 获得设备信息
@@ -113,7 +116,9 @@ def hik_camera_get():
     # 设置设备的一些参数
     set_Value(cam, param_type="float_value", node_name="ExposureTime", node_value=1060)  # 曝光时间
     set_Value(cam, param_type="float_value", node_name="Gain", node_value=17.9)  # 增益值
-    set_Value(cam, param_type="float_value", node_name="AcquisitionFrameRate", node_value=0.5)  # 采集帧率
+    # set_Value(cam, param_type="float_value", node_name="AcquisitionFrameRate", node_value=0.5)  # 采集帧率
+    set_Value(cam, param_type="float_value", node_name="AcquisitionFrameRate", node_value=1.0)  # 采集帧率
+
     # 开启设备取流
     start_grab_and_get_data_size(cam)
     # 主动取流方式抓取图像
@@ -157,6 +162,21 @@ def hik_camera_get():
             print("no data[0x%x]" % ret)
         time.sleep(0.016)
 
+def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
+    global lock
+    global is_update
+    global fish_group
+    global arg_param
+    global delete_set
+    while True:
+        with lock:
+            if is_update:
+                point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
+                PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
+                fish_group.delete_fish(arg_param[4])
+                is_update = 0
+            else:
+                pass
 class fish_grab():
     def __init__(self):
         self.last_points_list = []
@@ -256,10 +276,10 @@ while camera_image is None:
 
 # MainWindow.show()
 
-# 创建一个锁
-state_lock = threading.Lock()
 # 共享的state变量
-state = 1
+
+follow_thread = threading.Thread(target=mc_follow_line_thread, args=(plc, ), daemon=True)
+follow_thread.start()
 
 while True:
 
@@ -282,26 +302,32 @@ while True:
             print(fish_group.fish_list)
             fish_all= len(fish_group.fish_list)
             delete_set=[]
+            for delete_num in delete_set:
+                fish_group.delete_fish(delete_num)
             for fish_num in range(fish_all):
                 plc.PLC_cov_vRead()
                 fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
                 if 100 < fish_group.fish_list[fish_num][4] < 900 :
                     print("进行整形")
                     pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
+                    arg_param =[pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2],fish_num]
+                    is_update=1
+                    break
                     # mc_follow_line_thread(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2])##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
-                    follow_thread =threading.Thread(target=mc_follow_line_thread, args=(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2]), daemon=True).start()
-                    try:
-                        follow_thread.start()
-                    except:
-                        print("线程启动失败")
-                    delete_set.append(fish_num)
+                    # follow_thread =threading.Thread(target=mc_follow_line_thread, args=(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2]), daemon=True).start()
+                    # try:
+                    #     follow_thread.start()
+                    # except:
+                    #     print("线程启动失败")
+                    #     continue
+                    # delete_set.append(fish_num)
                     # fish_group.delete_fish(fish_num)
                     # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
                     # continue
-                    continue
+
                     # mc_move_to_point(plc, point_set=[400, 0, 0, None, None])
-                if fish_group.fish_list[fish_num][4] > 1000 :
-                    delete_set.append(fish_num)
+                # if fish_group.fish_list[fish_num][4] > 1000 :
+                #     delete_set.append(fish_num)
             for delete_num in delete_set:
                 fish_group.delete_fish(delete_num)
 

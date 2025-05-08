@@ -290,7 +290,7 @@ class PLCWriteRead:
             x_v = self.ReadPlcDB(13, 36, 1, form='real') / 1000
             # 获取执行器状态
             current_pos, current_vel = x_p, x_v
-            print(x_p, x_v)  # 输出浮点数
+            # print(x_p, x_v)  # 输出浮点数
 
             # 执行PID控制计算（current_pos/vel由外部系统反馈）
             control_vel = pid.update(target_pos, current_pos, current_vel)
@@ -299,13 +299,13 @@ class PLCWriteRead:
             self.WritePlcDB(13, 24, (control_vel * 1000), form='real')
 
             # 结果显示
-            print(
-                f"当前时间: {show_time:.4f}, "
-                f"目标位置: {target_pos:.4f}, "
-                f"当前位置: {current_pos:.4f}, "
-                f"当前速度: {current_vel:.4f}, "
-                f"控制速度: {control_vel:.4f}"
-            )
+            # print(
+            #     f"当前时间: {show_time:.4f}, "
+            #     f"目标位置: {target_pos:.4f}, "
+            #     f"当前位置: {current_pos:.4f}, "
+            #     f"当前速度: {current_vel:.4f}, "
+            #     f"控制速度: {control_vel:.4f}"
+            # )
             results.append({
                         "Time": show_time-time_0,
                         "Target Position": target_pos,
