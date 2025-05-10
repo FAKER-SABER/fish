@@ -176,11 +176,13 @@ def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  si
     while True:
         with lock:
 
-            if is_update:
+            if len(arg_param) > 0:
                 print("work")
-                point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
-                PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
+                point_set = [0, arg_param[0][2], arg_param[0][3], 0, 0]  # [x,y,zf,none,none]
+                PLC.PLC_RAS(point_set, 2, arg_param[0][0], arg_param[0][1])
                 is_update = 0
+                # del arg_param[0]
+                print("抓取完成，删除")
             else:
                 print("don't work")
                 t.sleep(0.1)
@@ -275,35 +277,44 @@ class Worker(QObject):
         global points_list
         global is_update
         global arg_param
+        delete_set = []
         while True:
             with lock:
+                t.sleep(0.5)
                 fish_group.get_points_list(points_list)
                 plc.PLC_cov_vRead()
-                print(plc.cov_v)
+                # print(plc.cov_v)
                 fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                print(f"获取最新鱼群列表{fish_group.fish_list},\n鱼数量{len(fish_group.fish_list)}")
+                # print(f"获取最新鱼群列表{fish_group.fish_list},\n鱼数量{len(fish_group.fish_list)}")
                 # print(points_list)
-                if len(fish_group.fish_list) == 0:
-                    print("没有鱼")
-                    mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
+                print(len(arg_param))
+                if len(fish_group.fish_list) == 0 :
+                    if len(arg_param) == 0:
+                        print("没有鱼")
+                        mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
                 else:
                     print(fish_group.fish_list)
                     fish_all = len(fish_group.fish_list)
                     for fish_num in range(fish_all):
-                        plc.PLC_cov_vRead()
-                        fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+                        # plc.PLC_cov_vRead()
+                        # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+                        print(f"鱼{fish_num}的位置{fish_group.fish_list[fish_num]}")
                         if fish_group.fish_list[fish_num][4] > 900:
-                            fish_group.delete_fish(fish_num)
-                            break
+                            delete_set.append(fish_num)
                         if 0 < fish_group.fish_list[fish_num][4] < 850:
                             print("进行整形")
                             pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
-                            arg_param = [pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
+                            arg_param.append([pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
                                          fish_group.fish_list[fish_num][1] + 120, fish_group.fish_list[fish_num][2],
-                                         fish_num]
+                                         fish_num])
+                            # print(len(arg_param))
                             is_update = 1
-                            fish_group.delete_fish(fish_num)
+                            delete_set.append(fish_num)
                             break
+                    for i in range(len(delete_set)):
+                        fish_group.delete_fish(delete_set[i])
+                        delete_set.remove(delete_set[i])
+
 
 
 
@@ -341,8 +352,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.worker.paused = False
         self.worker.pause_event.set()
         # self.worker.result_signal.connect(self.handle_result)
-        self.thread = threading.Thread(target=self.worker.do_work)
-        self.thread.start()
+        self.mainthread = threading.Thread(target=self.worker.do_work)
+        self.mainthread.start()
 
     def stop_SYSTEM(self):
         mc_wait(self.PLC)
@@ -392,65 +403,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_window_data(self):
         pass
         return 0
-        # # 实时获取多进程全局变量的值
-        # global window_flag
-        # data = window_flag
-        # if data[0] == 0:
-        #     print("工业相机无法连接")
-        #     self.label_15.setText("工业相机无法连接")
-        #     self.label_15.setStyleSheet("background-color:rgb(255, 0, 0);")
-        #     font = QFont("宋体", 16)
-        #     self.label_15.setFont(font)
-        #     self.label_sys_status.setText("系统硬件出错，请在硬件管理中排查")
-        #     self.label_sys_status.setStyleSheet("background-color:rgb(255, 0, 0);")
-        #     font = QFont("宋体", 22)
-        #     self.label_sys_status.setFont(font)
-        # elif data[0] == 1:
-        #     self.label_15.setText("工业相机正常")
-        #     self.label_15.setStyleSheet("background-color:rgb(0, 255， 0);")
-        #     font = QFont("宋体", 16)
-        #     self.label_15.setFont(font)
-        # if data[1] == 0:
-        #     print("PLC无法连接")
-        #     self.label_12.setText("PLC无法连接")
-        #     self.label_12.setStyleSheet("background-color:rgb(255, 0, 0);")
-        #     font = QFont("宋体", 16)
-        #     self.label_12.setFont(font)
-        #     self.label_sys_status.setText("系统硬件出错，请在硬件管理中排查")
-        #     self.label_sys_status.setStyleSheet("background-color:rgb(255, 0, 0);")
-        #     font = QFont("宋体", 22)
-        #     self.label_sys_status.setFont(font)
-        # elif data[1] == 1:
-        #     self.label_12.setText("工业相机正常")
-        #     self.label_12.setStyleSheet("background-color:rgb(0, 255， 0);")
-        #     font = QFont("宋体", 16)
-        #     self.label_12.setFont(font)
-        # if data[0] == 1 and data[1] == 1:
-        #     self.label_sys_status.setText("海鱼整形系统正常运行")
-        #     self.label_sys_status.setStyleSheet("background-color:rgb(0, 255, 0);")
-        #     font = QFont("宋体", 22)
-        #     self.label_sys_status.setFont(font)
+
     def update_image(self):
         pass
         return 0
-    # def load_item(self):
-    #     # if os.path.exists('./windows/海鱼型号.txt'):
-    #     with open('./windows/海鱼型号.txt', 'r') as file:
-    #         for line in file:
-    #             item = line.strip()
-    #             data = item.split(',')
-    #             self.comboBox.addItem(data[0])
-    # def onActivated(self, text):
-    #     # index = self.comboBox.findText(text)
-    #     # print(index)
-    #     # if os.path.exists('./windows/海鱼型号.txt'):
-    #     with open('./windows/海鱼型号.txt', 'r') as file:
-    #         for line in file:
-    #             data = line.strip()
-    #             data = data.split(',')
-    #             if data[0] == text:
-    #                 self.label_19.setText(data[1]+'mm')
-    #                 self.label_21.setText(data[2]+'mm')
+
 camera_image = None
 if camera_mode == 'test':
     camera_image = cv2.imread('images/11041.jpg')
@@ -464,9 +421,7 @@ while camera_image is None:
     print("等待图像获取...")
     time.sleep(0.5)
 
-# MainWindow.show()
 
-# 共享的state变量
 
 follow_thread = threading.Thread(target=mc_follow_line_thread, args=(plc, ), daemon=True)
 follow_thread.start()
