@@ -424,7 +424,7 @@ class PLCWriteRead:
             cov_vnow = 0
             self.cov_v = 0
             self.cov_vlast=0
-        self.cov_vlast = self.cov_v
+        self.cov_vlast = self.cov_v*0.2+self.cov_vlast*0.8
         self.cov_v =cov_vnow / 1000
 
 

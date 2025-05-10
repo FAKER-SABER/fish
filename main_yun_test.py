@@ -19,6 +19,7 @@ points_list = []
 lock = threading.Lock()
 arg_param = []
 is_update=0
+
 #生成窗口对象
 
 plc = plc_connect()
@@ -168,15 +169,20 @@ def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  si
     global fish_group
     global arg_param
     global delete_set
+
     while True:
         with lock:
+
             if is_update:
+                print("work")
                 point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
                 PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
-                fish_group.delete_fish(arg_param[4])
+
+
                 is_update = 0
             else:
-                pass
+                print("don't work")
+                t.sleep(0.1)
 class fish_grab():
     def __init__(self):
         self.last_points_list = []
@@ -231,7 +237,7 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.8+scov_vlast*0.25)*(current_time-fish[6])*1000,  # x_n
+                    fish[4]+(scov_v*0.7+scov_vlast*0.36)*(current_time-fish[6])*1000,  # x_n
                     # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
@@ -302,83 +308,20 @@ while True:
             print(fish_group.fish_list)
             fish_all= len(fish_group.fish_list)
             delete_set=[]
-            for delete_num in delete_set:
-                fish_group.delete_fish(delete_num)
+
             for fish_num in range(fish_all):
                 plc.PLC_cov_vRead()
                 fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                if 100 < fish_group.fish_list[fish_num][4] < 900 :
+                if fish_group.fish_list[fish_num][4] > 900:
+                    fish_group.delete_fish(fish_num)
+                    break
+                if 100 < fish_group.fish_list[fish_num][4] < 850 :
+
                     print("进行整形")
                     pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
                     arg_param =[pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2],fish_num]
-                    is_update=1
+                    is_update = 1
+                    fish_group.delete_fish(fish_num)
                     break
-                    # mc_follow_line_thread(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2])##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
-                    # follow_thread =threading.Thread(target=mc_follow_line_thread, args=(plc, pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2]), daemon=True).start()
-                    # try:
-                    #     follow_thread.start()
-                    # except:
-                    #     print("线程启动失败")
-                    #     continue
-                    # delete_set.append(fish_num)
-                    # fish_group.delete_fish(fish_num)
-                    # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                    # continue
 
-                    # mc_move_to_point(plc, point_set=[400, 0, 0, None, None])
-                # if fish_group.fish_list[fish_num][4] > 1000 :
-                #     delete_set.append(fish_num)
-            for delete_num in delete_set:
-                fish_group.delete_fish(delete_num)
-
-
-
-
-
-
-
-
-#test
-# #PLC
-# PLC = PLCWriteRead("192.168.0.1", name='1200')
-# plcifc=PLC.ConnectPlc()
-# while  plcifc==False:
-#     print("未连接PLC")
-#     window_flag[1]=0
-#     plcifc = PLC.ConnectPlc()
-#     MainWindow.show()
-#     time.sleep(1)
-# window_flag[1] = 1
-# PLC_SET= []
-
-
-#     img_copy = camera_image.copy()
-#     ts = time.time()
-#     end_time = ts + 5
-#     # 获取海鱼在拍摄时相对于夹爪坐标系的坐标
-#     # points_list = recognize_ellipses(img_copy, ts, [])
-#     recognize_ellipses(img_copy, ts, [])
-#     # PLC_SET=[0,points_list[0][1],points_list[0][2],points_list[0][3]]
-#
-#     # PLC.PLC_RAS(PLC_SET)
-#     # print(points_list)
-#     # point_offset = (X_PLC, Y_PLC, avg_angle, ts)
-#     # XYCAM:47.1363099068624, 137.713521617154
-#
-#     # 对坐标实时更新并写进plc
-#
-#
-#
-#     # MainWindow.show()
-#     # PLC.PLC_RAS()
-#     # while time.time() < end_time:
-#     #     continue
-
-
-
-
-
-
-
-
-
+            fish_group.delete_fish(fish_num)
