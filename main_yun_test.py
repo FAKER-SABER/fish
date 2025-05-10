@@ -16,7 +16,7 @@ from MvImport.MvCameraControl_class import *
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QTimer, QTime, QObject, pyqtSignal, QDateTime, QEventLoop
 from PyQt5.QtWidgets import QInputDialog, QLineEdit, QDialog,QMainWindow
-from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
+from move_control import mc_restart, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
 from windows.win import Ui_MainWindow  # 导入ui界面文件
 
 points_list = []
@@ -281,11 +281,21 @@ class Worker(QObject):
         global is_update
         global arg_param
         delete_set = []
+        paused_flag =0
+        with get_lock:
+            mc_restart(plc)
+            mc_go_home(plc)
+
         while True:
             with get_lock:
                 if self.paused:
                     mc_wait(plc)
                     print("线程暂停")
+                    paused_flag=1
+                if paused_flag==1 and not self.paused:
+                    print("线程继续")
+                    paused_flag=0
+                    mc_restart(plc)
 
                 if self.stop:
                     mc_wait(plc)
@@ -355,6 +365,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_start.clicked.connect(self.start_SYSTEM)
         self.pushButton_stop.clicked.connect(self.stop_SYSTEM)
         self.pushButton_wait.clicked.connect(self.paused_SYSTEM)
+        self.pushButton_restart.clicked.connect(self.restart_SYSTEM)
         # 连接 QComboBox 的信号 activated 到槽函数 onActivated
         self.timer1 = QTimer(self)
         self.timer1.timeout.connect(self.label_show_time)
@@ -367,16 +378,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer3.timeout.connect(self.update_window_data)
         self.timer3.start(5000)
 
+    def restart_SYSTEM(self):
+        print("开始线程")
+
+        self.worker.paused = False
+        self.worker.pause_event.set()
+
+
     def start_SYSTEM(self):
         print("开始线程")
         self.worker = Worker()
         self.worker.paused = False
-        self.worker.stop= False
+        self.worker.stop = False
         self.worker.pause_event.set()
         # self.worker.result_signal.connect(self.handle_result)
         self.mainthread = threading.Thread(target=self.worker.do_work)
         self.mainthread.start()
-
     def stop_SYSTEM(self):
 
         self.worker.stop = True
@@ -384,40 +401,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def paused_SYSTEM(self):
         self.worker.paused = True
         self.worker.pause_event.clear()
-        self.pushButton_stop.setEnabled(False)
-        self.pushButton_start.setEnabled(True)
 
-        # global window_flag
-        # window_flag[2]=1
-        # self.PLC.ConnectPlc()
-        # # 先将系统停下
-        # self.PLC.WritePlcMK(2, 0, form='bit', bit=5)
-        # # 擦除相关数据区的数据
-        # # 1、将数据写入标志和数据写入完成标志擦除
-        # self.PLC.WritePlcMK(2, 0, form='bit', bit=6)
-        # self.PLC.WritePlcMK(2, 0, form='bit', bit=7)
-        # # 将程序中会被set置位的m线圈进行复位
-        # self.PLC.WritePlcMK(4, 0, form='bit', bit=2)
-        # self.PLC.WritePlcMK(4, 0, form='bit', bit=3)
-        # self.PLC.WritePlcMK(4, 0, form='bit', bit=4)
-        # # 2、擦除存储XY轴坐标数据的DB数据块
-        # for i in range(25):
-        #     # 想PLC写入目标的X轴坐标
-        #     self.PLC.WritePlcDB(12, 4 * i, 0.0, form='real')
-        #     # 想PLC写入目标的Y轴坐标
-        #     self.PLC.WritePlcDB(12, 4 * i + 100, 0.0, form='real')
-        #     # Z轴旋转角度
-        #     self.PLC.WritePlcDB(12, 4 * i + 200, 0.0, form='real')
-        #     # X轴随动
-        #     self.PLC.WritePlcDB(12, 4 * i + 300, 0.0, form='real')
-        # self.PLC.WritePlcDB(12, 400, 0, form='Uint')
-        # self.PLC.WritePlcDB(12, 402, 0, form='Uint')
-        # self.PLC.WritePlcDB(12, 404, 0, form='Uint')
-        # self.PLC.WritePlcDB(12, 406, 0, form='Uint')
-        # self.PLC.WritePlcDB(12, 408, 0, form='Dint')
-        #
-        # self.PLC.disconnectPlc()
-        # print("start_shuaxin_func已运行")
+
+
     def label_show_time(self):
         datetime = QDateTime.currentDateTime()
         current_date = datetime.toString('yyyy-MM-dd')
