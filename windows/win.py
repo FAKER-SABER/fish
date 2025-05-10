@@ -172,6 +172,10 @@ class Ui_MainWindow(object):
         self.pushButton_wait.setFont(font)
         self.pushButton_wait.setObjectName("pushButton_wait")
         self.verticalLayout_6.addWidget(self.pushButton_wait)
+        self.pushButton_restart = QtWidgets.QPushButton(self.groupBox_6)
+        self.pushButton_restart.setMinimumSize(QtCore.QSize(0, 100))
+        self.pushButton_restart.setObjectName("pushButton_restart")
+        self.verticalLayout_6.addWidget(self.pushButton_restart)
         self.pushButton_stop = QtWidgets.QPushButton(self.groupBox_6)
         self.pushButton_stop.setMinimumSize(QtCore.QSize(0, 100))
         font = QtGui.QFont()
@@ -209,5 +213,6 @@ class Ui_MainWindow(object):
         self.label_time.setText(_translate("MainWindow", "时间"))
         self.pushButton_start.setText(_translate("MainWindow", "开始"))
         self.pushButton_wait.setText(_translate("MainWindow", "暂停"))
+        self.pushButton_restart.setText(_translate("MainWindow", "恢复"))
         self.pushButton_stop.setText(_translate("MainWindow", "停止"))
 # import picture_rc

@@ -384,6 +384,9 @@ class PLCWriteRead:
         self.WritePlcMK(2, 0, form='bit', bit=6)
         self.PLC_bitreset()
 
+    def PLC_restart(self):
+        self.WritePlcMK(2, 1, form='bit', bit=6)
+
 
 
     def save_speed_to_excel(self,speed: float, pulse: int,excel_path: str = None):

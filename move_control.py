@@ -51,6 +51,9 @@ def mc_wait(PLC):
     pid_pram = None
     target_parm = None
     PLC.PLC_RAS(point_set, 3, pid_pram, target_parm)
+def mc_restart(PLC):
+    PLC.PLC_restart()
+
 
 def errormach_follow(x_p,x_n):#当前位置 目标位置
     errorpotion=x_p-x_n
