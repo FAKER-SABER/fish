@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QInputDialog, QLineEdit, QDialog,QMainWindow
 from scipy.constants import golden
 from PyQt5.QtWidgets import QApplication, QLabel
-from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
+# from move_control import mc_control, mc_go_home, mc_move_to_point, mc_follow_line, mc_wait, plc_connect,errormach_follow
 from windows.win import Ui_MainWindow  # 导入ui界面文件
 from windows.winDia import Ui_Dialog
 from windows import picture_rc
@@ -27,29 +27,47 @@ class Worker(QObject):
 
     def do_work(self):
         print("开始线程")
+        global lock
+        global fish_group
+        global points_list
+        global is_update
+        global arg_param
+        global plc
         while True:
-            # 检查是否暂停，如果暂停则等待
+            with lock:
+                fish_group.get_points_list(points_list)
+                plc.PLC_cov_vRead()
+                print(plc.cov_v)
+                fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+                print(f"获取最新鱼群列表{fish_group.fish_list},\n鱼数量{len(fish_group.fish_list)}")
+                # print(points_list)
+                if len(fish_group.fish_list) == 0:
+                    print("没有鱼")
+                    mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
 
-            self.pause_event.wait()
-            if self.paused:
 
-                continue
-            # 模拟耗时操作
-            print("开始")
+                else:
+                    print(fish_group.fish_list)
+                    fish_all = len(fish_group.fish_list)
+                    delete_set = []
 
-            mc_go_home(self.PLC)
-            print(self.paused)
-            if self.paused:
-                break
-            mc_move_to_point(self.PLC, point_set=[250, 0, 60, None, None])
-            print(self.paused)
-            if self.paused:
-                break
-            t.sleep(3)
-            mc_follow_line(self.PLC, [9.0, 0.12, 5.0, 0.1, 1.0, 0.8, 5.0], [0.25, 0.1], 100, 0)
-            print(1)
-            pid_r.plot_pid_result()
-            break
+                    for fish_num in range(fish_all):
+                        plc.PLC_cov_vRead()
+                        fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+                        if fish_group.fish_list[fish_num][4] > 900:
+                            fish_group.delete_fish(fish_num)
+                            break
+                        if 100 < fish_group.fish_list[fish_num][4] < 850:
+                            print("进行整形")
+                            pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
+                            arg_param = [pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
+                                         fish_group.fish_list[fish_num][1] + 120, fish_group.fish_list[fish_num][2],
+                                         fish_num]
+                            is_update = 1
+                            fish_group.delete_fish(fish_num)
+                            break
+
+                    fish_group.delete_fish(fish_num)
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, plc):

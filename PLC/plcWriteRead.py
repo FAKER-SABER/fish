@@ -418,7 +418,7 @@ class PLCWriteRead:
         print(f"[{timestamp}] 数据已保存 -> {excel_path}")
 
     def PLC_cov_vRead(self):
-        self.pulse=self.ReadPlcDB(13, 64, 1, form='real')+(self.ReadPlcDB(13, 68, 1, form='real')-1)*65536
+        # self.pulse=self.ReadPlcDB(13, 64, 1, form='real')+(self.ReadPlcDB(13, 68, 1, form='real')-1)*65536
         cov_vnow = self.ReadPlcDB(13, self.cov_VP, 1, form='real')
         if abs(cov_vnow)<0.001:
             cov_vnow = 0
