@@ -21,10 +21,10 @@ from windows.win import Ui_MainWindow  # 导入ui界面文件
 
 points_list = []
 lock = threading.Lock()
+get_lock = threading.Lock()
 arg_param = []
 is_update=0
 
-#生成窗口对象
 
 plc = plc_connect()
 plc.PLC_cov_vRead()
@@ -168,24 +168,25 @@ def hik_camera_get():
         time.sleep(0.016)
 
 def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  simulation_time  追踪目标参数target_parm: x V
-    global lock
+    global get_lock
     global is_update
     global fish_group
     global arg_param
 
     while True:
-        with lock:
+        with get_lock:
 
-            if len(arg_param) > 0:
+            if len(arg_param) >0:
                 print("work")
-                point_set = [0, arg_param[0][2], arg_param[0][3], 0, 0]  # [x,y,zf,none,none]
-                PLC.PLC_RAS(point_set, 2, arg_param[0][0], arg_param[0][1])
+                point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
+                PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
+
                 is_update = 0
-                # del arg_param[0]
+                arg_param = []
                 print("抓取完成，删除")
             else:
                 print("don't work")
-                t.sleep(0.1)
+                t.sleep(0.4)
 class fish_grab():
     def __init__(self):
         self.last_points_list = []
@@ -232,7 +233,7 @@ class fish_grab():
             return 1
         else:
             fish_total= len(self.fish_list)
-            fish=[]
+
             for fi in range(fish_total):
                 fish = self.fish_list[fi]
                 self.fish_list[fi] = (
@@ -265,6 +266,7 @@ class Worker(QObject):
         self.result_signal = pyqtSignal(str)
         # 用于控制线程是否暂停的标志
         self.paused = False
+        self.stop = False
         # 用于线程间同步的事件对象
         self.pause_event = threading.Event()
         self.pause_event.set()
@@ -273,28 +275,45 @@ class Worker(QObject):
     def do_work(self):
         print("开始线程")
         global lock
+        global get_lock
         global fish_group
         global points_list
         global is_update
         global arg_param
         delete_set = []
         while True:
+            with get_lock:
+                if self.paused:
+                    mc_wait(plc)
+                    print("线程暂停")
+
+                if self.stop:
+                    mc_wait(plc)
+                    print("线程结束")
+                    break
+
             with lock:
-                t.sleep(0.5)
+                # t.sleep(0.5)
                 fish_group.get_points_list(points_list)
-                plc.PLC_cov_vRead()
-                # print(plc.cov_v)
-                fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+
+                # plc.PLC_cov_vRead()
+                # # print(plc.cov_v)
+                # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
                 # print(f"获取最新鱼群列表{fish_group.fish_list},\n鱼数量{len(fish_group.fish_list)}")
                 # print(points_list)
-                print(len(arg_param))
-                if len(fish_group.fish_list) == 0 :
-                    if len(arg_param) == 0:
-                        print("没有鱼")
-                        mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
-                else:
-                    print(fish_group.fish_list)
+
+            if len(fish_group.fish_list) == 0 :
+                if len(arg_param) == 0:
+                    print("没有鱼")
+                    mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
+            else:
+                with get_lock:
+
+                    # print(fish_group.fish_list)
+                    plc.PLC_cov_vRead()
+                    fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
                     fish_all = len(fish_group.fish_list)
+
                     for fish_num in range(fish_all):
                         # plc.PLC_cov_vRead()
                         # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
@@ -302,18 +321,20 @@ class Worker(QObject):
                         if fish_group.fish_list[fish_num][4] > 900:
                             delete_set.append(fish_num)
                         if 0 < fish_group.fish_list[fish_num][4] < 850:
+                            if len(arg_param) == 1:
+                                continue
                             print("进行整形")
                             pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
-                            arg_param.append([pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
+                            arg_param=[pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
                                          fish_group.fish_list[fish_num][1] + 120, fish_group.fish_list[fish_num][2],
-                                         fish_num])
+                                         fish_num]
                             # print(len(arg_param))
-                            is_update = 1
+
                             delete_set.append(fish_num)
                             break
-                    for i in range(len(delete_set)):
-                        fish_group.delete_fish(delete_set[i])
-                        delete_set.remove(delete_set[i])
+                for i in range(len(delete_set)):
+                    fish_group.delete_fish(delete_set[i])
+                    delete_set.remove(delete_set[i])
 
 
 
@@ -323,7 +344,7 @@ class Worker(QObject):
 camera_mode = 'hik'  # 'test':测试模式,'hik':海康相机,'video':USB相机（videocapture）
 
 fish_group = fish_grab()
-points_list = []
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -333,7 +354,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mcflag=0
         self.pushButton_start.clicked.connect(self.start_SYSTEM)
         self.pushButton_stop.clicked.connect(self.stop_SYSTEM)
-        self.pushButton_wait.clicked.connect(self.wait_SYSTEM)
+        self.pushButton_wait.clicked.connect(self.paused_SYSTEM)
         # 连接 QComboBox 的信号 activated 到槽函数 onActivated
         self.timer1 = QTimer(self)
         self.timer1.timeout.connect(self.label_show_time)
@@ -350,14 +371,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("开始线程")
         self.worker = Worker()
         self.worker.paused = False
+        self.worker.stop= False
         self.worker.pause_event.set()
         # self.worker.result_signal.connect(self.handle_result)
         self.mainthread = threading.Thread(target=self.worker.do_work)
         self.mainthread.start()
 
     def stop_SYSTEM(self):
-        mc_wait(self.PLC)
-    def wait_SYSTEM(self):
+
+        self.worker.stop = True
+
+    def paused_SYSTEM(self):
         self.worker.paused = True
         self.worker.pause_event.clear()
         self.pushButton_stop.setEnabled(False)
