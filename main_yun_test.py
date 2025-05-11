@@ -241,13 +241,14 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.7+scov_vlast*0.36)*(current_time-fish[6])*1000+6,  # x_n
+                    fish[4]+(scov_v*0.7+scov_vlast*0.36)*(current_time-fish[6])*1000,  # x_n
                     # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
                     0  # state
 
                 )
+
         return self.fish_list
 
     def delete_fish(self, num_fish):
@@ -322,6 +323,7 @@ class Worker(QObject):
                     # print(fish_group.fish_list)
                     plc.PLC_cov_vRead()
                     fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
+                    print(time.time())
                     fish_all = len(fish_group.fish_list)
 
                     for fish_num in range(fish_all):

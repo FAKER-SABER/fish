@@ -289,7 +289,7 @@ class PLCWriteRead:
             x_p = self.ReadPlcDB(13, 32, 1, form='real') / 1000
             x_v = self.ReadPlcDB(13, 36, 1, form='real') / 1000
             PLC_state = self.PLC_bitread()
-            print(PLC_state)
+            # print(PLC_state)
             z_f = PLC_state[12][8]
             print(z_f)
             # 获取执行器状态
