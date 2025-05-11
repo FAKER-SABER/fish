@@ -278,16 +278,20 @@ class PLCWriteRead:
         time_0=t.time()
         error = 0.1
         n=0
-
+        z_f = 0
         while (t.time() - start_time) < simulation_time:
             # 获取当前目标位置（带时间同步的实时更新）
-            if abs(error) < 0.02 and n == 0:
+            if abs(error) < 0.02 and n == 0 and z_f == 1:
                 self.getch_RUN()
                 n = 1
             target_pos = target.get_pos()
             show_time = t.time()
             x_p = self.ReadPlcDB(13, 32, 1, form='real') / 1000
             x_v = self.ReadPlcDB(13, 36, 1, form='real') / 1000
+            PLC_state = self.PLC_bitread()
+            print(PLC_state)
+            z_f = PLC_state[12][8]
+            print(z_f)
             # 获取执行器状态
             current_pos, current_vel = x_p, x_v
             # print(x_p, x_v)  # 输出浮点数
@@ -321,7 +325,7 @@ class PLCWriteRead:
         df = pd.DataFrame(results)
         df.to_excel("pid_control_results.xlsx", index=False)
         print("程序结束，结果已保存到 pid_control_results.xlsx")
-
+        # self.WritePlcMK(12, 0, form='bit', bit=7)
         self.WritePlcDB(13, 24, 0, form='real')
          
     def follow_STOP(self):

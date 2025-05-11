@@ -186,7 +186,7 @@ def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  si
                 print("抓取完成，删除")
             else:
                 print("don't work")
-                t.sleep(0.4)
+                t.sleep(0.1)
 class fish_grab():
     def __init__(self):
         self.last_points_list = []
@@ -241,7 +241,7 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.7+scov_vlast*0.36)*(current_time-fish[6])*1000,  # x_n
+                    fish[4]+(scov_v*0.7+scov_vlast*0.36)*(current_time-fish[6])*1000+6,  # x_n
                     # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
