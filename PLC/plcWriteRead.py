@@ -291,7 +291,7 @@ class PLCWriteRead:
             PLC_state = self.PLC_bitread()
             # print(PLC_state)
             z_f = PLC_state[12][8]
-            print(z_f)
+            # print(z_f)
             # 获取执行器状态
             current_pos, current_vel = x_p, x_v
             # print(x_p, x_v)  # 输出浮点数
@@ -431,7 +431,7 @@ class PLCWriteRead:
             cov_vnow = 0
             self.cov_v = 0
             self.cov_vlast=0
-        self.cov_vlast = self.cov_v*0.2+self.cov_vlast*0.8
+        self.cov_vlast = self.cov_v
         self.cov_v =cov_vnow / 1000
 
 
