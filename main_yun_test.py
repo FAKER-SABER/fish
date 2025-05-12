@@ -241,13 +241,13 @@ class fish_grab():
                     fish[1],  # y
                     fish[2],  # theta
                     fish[3],  # time
-                    fish[4]+(scov_v*0.7+scov_vlast*0.3)*(current_time-fish[6])*1000,  # x_n
+                    fish[4]+(scov_v*1+scov_vlast*0)*(current_time-fish[6])*1000,  # x_n
                     # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  # y_n（保持不变）
                     current_time,  # 更新时间
                     0  # state
-
                 )
+
 
         return self.fish_list
 
@@ -316,7 +316,8 @@ class Worker(QObject):
             if len(fish_group.fish_list) == 0 :
                 if len(arg_param) == 0:
                     print("没有鱼")
-                    mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
+                    with get_lock:
+                        mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
             else:
                 with get_lock:
 
@@ -325,14 +326,14 @@ class Worker(QObject):
                     fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
                     # print(time.time())
                     fish_all = len(fish_group.fish_list)
-
+                    delete_set = []
                     for fish_num in range(fish_all):
                         # plc.PLC_cov_vRead()
                         # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                        print(f"鱼{fish_num}的位置{fish_group.fish_list[fish_num]}")
+                        # print(f"鱼{fish_num}的位置{fish_group.fish_list[fish_num]}")
                         if fish_group.fish_list[fish_num][4] > 900:
                             delete_set.append(fish_num)
-                        if 0 < fish_group.fish_list[fish_num][4] < 850:
+                        if 100 < fish_group.fish_list[fish_num][4] < 850:
                             if len(arg_param) == 1:
                                 continue
                             print("进行整形")
@@ -346,7 +347,7 @@ class Worker(QObject):
                             break
                 for i in range(len(delete_set)):
                     fish_group.delete_fish(delete_set[i])
-                    delete_set.remove(delete_set[i])
+
 
 
 

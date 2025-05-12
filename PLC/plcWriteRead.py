@@ -281,9 +281,11 @@ class PLCWriteRead:
         z_f = 0
         while (t.time() - start_time) < simulation_time:
             # 获取当前目标位置（带时间同步的实时更新）
-            if abs(error) < 0.02 and n == 0 and z_f == 1:
-                self.getch_RUN()
-                n = 1
+            if abs(error) < 0.02 and n < 3 and z_f == 1:
+
+                n = n + 1
+                if n == 3:
+                    self.getch_RUN()
             target_pos = target.get_pos()
             show_time = t.time()
             x_p = self.ReadPlcDB(13, 32, 1, form='real') / 1000
