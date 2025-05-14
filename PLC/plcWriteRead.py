@@ -293,8 +293,8 @@ class PLCWriteRead:
             # print(PLC_state)
             z_f = PLC_state[12][7]
             if_over=PLC_state[11][5]
-            # if if_over==1:
-            #     break
+            if if_over==1:
+                break
             # print(z_f)
             # 获取执行器状态
             current_pos, current_vel = x_p, x_v
