@@ -14,7 +14,7 @@ def mouse_callback(event, x, y, flags, param):
 
 
 # 读取图片
-image_path = "../images/image.jpg"  # 替换为你的图片路径
+image_path = "../images/320.jpg"  # 替换为你的图片路径
 original_image = cv2.imread(image_path)
 if original_image is None:
     print("无法加载图片，请检查路径是否正确")

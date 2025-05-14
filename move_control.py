@@ -57,9 +57,9 @@ def mc_restart(PLC):
 
 def errormach_follow(x_p,x_n):#当前位置 目标位置
     errorpotion=x_p-x_n
-    follow_time=3.75
+    follow_time=3.5
     follow_longtime=4.5
-    follow_shorttime=2.5
+    follow_shorttime=3
     pid_set=[]
 
 

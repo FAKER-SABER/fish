@@ -281,18 +281,20 @@ class PLCWriteRead:
         z_f = 0
         while (t.time() - start_time) < simulation_time:
             # 获取当前目标位置（带时间同步的实时更新）
-            if abs(error) < 0.02 and n < 3 and z_f == 1:
+            if abs(error) < 0.05 and n == 0 and z_f == 1:
 
-                n = n + 1
-                if n == 3:
-                    self.getch_RUN()
+                n = 1
+                self.getch_RUN()
             target_pos = target.get_pos()
             show_time = t.time()
             x_p = self.ReadPlcDB(13, 32, 1, form='real') / 1000
             x_v = self.ReadPlcDB(13, 36, 1, form='real') / 1000
             PLC_state = self.PLC_bitread()
             # print(PLC_state)
-            z_f = PLC_state[12][8]
+            z_f = PLC_state[12][7]
+            if_over=PLC_state[11][5]
+            # if if_over==1:
+            #     break
             # print(z_f)
             # 获取执行器状态
             current_pos, current_vel = x_p, x_v
@@ -334,7 +336,7 @@ class PLCWriteRead:
         # 停止跟随
         self.WritePlcDB(13, self.target_xVP, 0, form='real')
         self.WritePlcMK(12, 0, form='bit', bit=self.follow_runb)
-        
+        self.WritePlcMK(11, 0, form='bit', bit=5)
     def PLC_bitreset(self):
         # 复位PLC
         self.WritePlcMK(12, 0, form='bit', bit=0)
@@ -378,7 +380,7 @@ class PLCWriteRead:
                 plc_states[addr] = []
 
         plc_states[11] = plc_states[11][::-1]
-
+        plc_states[12] = plc_states[12][::-1]
 
 
 
@@ -427,7 +429,8 @@ class PLCWriteRead:
         print(f"[{timestamp}] 数据已保存 -> {excel_path}")
 
     def PLC_cov_vRead(self):
-        # self.pulse=self.ReadPlcDB(13, 64, 1, form='real')+(self.ReadPlcDB(13, 68, 1, form='real')-1)*65536
+        pulse_low=65535-self.ReadPlcDB(13, 64, 1, form='real')
+        pulse_high=self.ReadPlcDB(13, 68, 1, form='real')
         cov_vnow = self.ReadPlcDB(13, self.cov_VP, 1, form='real')
         if abs(cov_vnow)<0.001:
             cov_vnow = 0
@@ -437,7 +440,7 @@ class PLCWriteRead:
         self.cov_v =cov_vnow / 1000
 
 
-        return [ self.x_p, self.x_v, self.cov_v,self.pulse]
+        return pulse_low,pulse_high
 
     def PLC_RAS(self,PLC_SET,mode,PID_PARM,target_parm ):
 ##PLC进程函数，读取plc标志位，根据标志位判断执行状态，再决定是否发送数据

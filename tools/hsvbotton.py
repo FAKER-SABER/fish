@@ -14,8 +14,8 @@ cv2.namedWindow('Result')
 # Initial values
 # low_H, low_S, low_V = 33, 19, 26
 # high_H, high_S, high_V = 179, 243, 163
-low_H, low_S, low_V = 111, 16, 80
-high_H, high_S, high_V = 160, 78, 121
+low_H, low_S, low_V = 0, 0, 250
+high_H, high_S, high_V = 10, 10, 255
 
 # Create trackbars
 cv2.createTrackbar('Low H', 'Trackbars', low_H, 179, nothing)
@@ -26,7 +26,7 @@ cv2.createTrackbar('High S', 'Trackbars', high_S, 255, nothing)
 cv2.createTrackbar('High V', 'Trackbars', high_V, 255, nothing)
 
 # Load image
-image_path = '../images/11.jpg'
+image_path = '../images/629.jpg'
 original_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 if original_image is None:
     print(f"Error: Could not read image from {image_path}")

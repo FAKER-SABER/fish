@@ -6,8 +6,8 @@ from sympy import Symbol, solve
 
 
 # PARAMETERS
-low_H, low_S, low_V = 58, 23, 80
-high_H, high_S, high_V = 161, 168, 142
+low_H, low_S, low_V = 0, 0, 250
+high_H, high_S, high_V = 10, 10, 255
 min_area = 50000
 max_area = 120000
 # 相机内参矩阵
@@ -58,7 +58,7 @@ def perspectiveTransform(img):
     H = img.shape[0]
     W = int(W)
     H = int(H)
-    print("W:", W, "H:", H)
+    # print("W:", W, "H:", H)
     # 手动或自动获取图像中物体四个角点（源点）
     x1, y1 = 0, 0
     x2, y2 = 2448, 0
@@ -76,7 +76,7 @@ def perspectiveTransform(img):
     return corrected_img
 
 def pixel_to_camera(pixel_x, pixel_y, internal_reference):
-    z_c = 450  ##单位毫米
+    z_c = 450  ##单位毫米#450
     x_camera = Symbol('x_camera')
     y_camera = Symbol('y_camera')
     equation1 = z_c * pixel_x - (internal_reference[0, 0] * x_camera + internal_reference[0, 1] * y_camera + internal_reference[0, 2] * z_c)
@@ -88,14 +88,16 @@ def pixel_to_camera(pixel_x, pixel_y, internal_reference):
 
 def camera_to_world(X_camera, Y_camera, ts):
     # 单位mm
-    X_offset = -50
+    X_offset = -45
     Y_offset = 300
+    # (-53.58, -270.02)
     X_world = X_offset - X_camera
     Y_world = Y_camera - Y_offset
     return (X_world, Y_world)
 
-def recognize_ellipses(img, ts, points_list):
+def recognize_ellipses(img, ts, points_list,pulse_L,pulse_H):
     # 提取边缘
+
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_bound, upper_bound)
     Gaussian_blur = cv2.GaussianBlur(mask, (5, 5), 0)
@@ -126,7 +128,7 @@ def recognize_ellipses(img, ts, points_list):
                 center = ellipse[0]
                 angle = ellipse[2]
                 # ellipses.append(ellipse)
-                # print(f"  Cluster_center_angle: ({number_of_ellipses}, {center[0]:.2f}, {center[1]:.2f}), {angle:.2f} degrees")
+                print(f"  Cluster_center_angle: ({number_of_ellipses}, {center[0]:.2f}, {center[1]:.2f}), {angle:.2f} degrees")
                 # 绘制簇中椭圆的平均中心
                 cluster_color = colors[number_of_ellipses % len(colors)]
                 text_pos = (int(center[0]), int(center[1]))
@@ -134,12 +136,13 @@ def recognize_ellipses(img, ts, points_list):
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, cluster_color, 2)
                 # 图像像素坐标转换为实际坐标
                 X_camera, Y_camera = pixel_to_camera(center[0], center[1], internal_reference)
-                # print(f"  Camera_point: ({X_camera:.2f}, {Y_camera:.2f})")
+                print(f"  Camera_point: ({X_camera:.2f}, {Y_camera:.2f})")
                 # 实际坐标转换为地理坐标
                 X_world, Y_world = camera_to_world(X_camera, Y_camera, ts)
-                # print(f"  World_point: ({X_world:.2f}, {Y_world:.2f})")
-                point_offset = (Y_world, X_world, angle, ts)
+                print(f"  World_point: ({X_world:.2f}, {Y_world:.2f})")
+                point_offset = (Y_world, X_world, angle, ts, pulse_L,pulse_H)
                 points_list.append(point_offset)
+                print(f"  Point_offset 123456: {point_offset}")
                 # 绘制拟合椭圆
                 number_of_ellipses += 1
                 cv2.ellipse(img, ellipse, (0, 0, 255), 2)
@@ -156,7 +159,8 @@ def recognize_ellipses(img, ts, points_list):
 
 if __name__ == '__main__':
     # 从文件夹中读取图片
-    image_path = './images/image.jpg'
+    image_path = './images/4.jpg'
+    # 沿传送带方向在相机正对为0，
     original_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
     if original_image is None:
         print(f"Error: Could not read image from {image_path}")
