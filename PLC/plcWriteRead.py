@@ -281,7 +281,7 @@ class PLCWriteRead:
         z_f = 0
         while (t.time() - start_time) < simulation_time:
             # 获取当前目标位置（带时间同步的实时更新）
-            if abs(error) < 0.05 and n == 0 and z_f == 1:
+            if abs(error) < 0.01 and n == 0 and z_f == 1:
 
                 n = 1
                 self.getch_RUN()
@@ -337,6 +337,7 @@ class PLCWriteRead:
         self.WritePlcDB(13, self.target_xVP, 0, form='real')
         self.WritePlcMK(12, 0, form='bit', bit=self.follow_runb)
         self.WritePlcMK(11, 0, form='bit', bit=5)
+        self.WritePlcMK(12, 0, form='bit', bit=7)
     def PLC_bitreset(self):
         # 复位PLC
         self.WritePlcMK(12, 0, form='bit', bit=0)
@@ -346,7 +347,7 @@ class PLCWriteRead:
         self.WritePlcMK(12, 0, form='bit', bit=4)
         self.WritePlcMK(12, 0, form='bit', bit=5)
         self.WritePlcMK(12, 0, form='bit', bit=6)
-        self.WritePlcMK(12, 0, form='bit', bit=7)
+        # self.WritePlcMK(12, 0, form='bit', bit=7)
         # self.WritePlcMK(11, 0, form='bit', bit=0)
         # self.WritePlcMK(11, 0, form='bit', bit=1)
         # self.WritePlcMK(11, 0, form='bit', bit=2)
@@ -431,16 +432,16 @@ class PLCWriteRead:
     def PLC_cov_vRead(self):
         pulse_low=65535-self.ReadPlcDB(13, 64, 1, form='real')
         pulse_high=self.ReadPlcDB(13, 68, 1, form='real')
-        cov_vnow = self.ReadPlcDB(13, self.cov_VP, 1, form='real')
-        if abs(cov_vnow)<0.001:
-            cov_vnow = 0
-            self.cov_v = 0
-            self.cov_vlast=0
-        self.cov_vlast = self.cov_v
-        self.cov_v =cov_vnow / 1000
+        # cov_vnow = self.ReadPlcDB(13, self.cov_VP, 1, form='real')
+        # if abs(cov_vnow)<0.001:
+        #     cov_vnow = 0
+        #     self.cov_v = 0
+        #     self.cov_vlast=0
+        # self.cov_vlast = self.cov_v
+        # self.cov_v =cov_vnow / 1000
 
 
-        return pulse_low,pulse_high
+        return [pulse_low,pulse_high]
 
     def PLC_RAS(self,PLC_SET,mode,PID_PARM,target_parm ):
 ##PLC进程函数，读取plc标志位，根据标志位判断执行状态，再决定是否发送数据
@@ -495,20 +496,7 @@ class PLCWriteRead:
                 self.ZF_RUN(PLC_SET[2])
                 self.follow_RUN(PID_PARM,target_parm)
                 self.follow_STOP()
-                # while PLC_state[self.read_Byte][5] == 0:
-                #     # 机械初始化未完成
-                #print("未完成")
-                #
-                #     t1=t.time()
-                #
-                #     t2 = t.time()
-                #     #print("总共耗时：", t2 - t1)
-                #     PLC_state = self.PLC_bitread()
-                #     # if mode==3:
-                #     #     self.PLC_allstop()
-                #     #     print("待机")
-                #     #     break
-                #
+
                 print("完成抓取")
         if mode==3:
             self.PLC_allstop()

@@ -6,7 +6,7 @@ import threading
 import numpy as np
 from PyQt5.QtGui import QIcon
 # 导入自定义模块
-# from windows import QtUI #ui
+import queue
 from PLC.plcWriteRead import *#PLC
 
 from recognition import recognize_ellipses
@@ -24,9 +24,9 @@ lock = threading.Lock()
 get_lock = threading.Lock()
 arg_param = []
 is_update=0
-pulse_L=0
-pulse_H=0
 
+pulse_list=[0,0]
+pulse_queue = queue.Queue(maxsize=1)
 plc = plc_connect()
 plc.PLC_cov_vRead()
 mc_go_home(plc)
@@ -39,8 +39,7 @@ def hik_camera_get():
     # 获得设备信息
     global camera_image
     global points_list
-    global pulse_L
-    global pulse_H
+
     deviceList = MV_CC_DEVICE_INFO_LIST()
     tlayerType = MV_GIGE_DEVICE | MV_USB_DEVICE
 
@@ -158,9 +157,10 @@ def hik_camera_get():
             ts = time.time()
             # img_copy = cv2.imread(f"./images/image_{i}.jpg", cv2.IMREAD_COLOR)
             img_copy = cv2.imread(f"./images/image.jpg", cv2.IMREAD_COLOR)
+            [pulse_now_L, pulse_now_H] = pulse_queue.get()
             with lock:
 
-                points_list = recognize_ellipses(img_copy, ts, [],pulse_L,pulse_H)
+                points_list = recognize_ellipses(img_copy, ts, [],pulse_now_L, pulse_now_H)
 
                 print(f"计算完成,结果{points_list}")
 
@@ -176,32 +176,39 @@ def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  si
     global is_update
     global fish_group
     global arg_param
-    global pulse_L
-    global pulse_H
+    global pulse_list
     while True:
-        n=0
+
         with get_lock:
 
             if len(arg_param) >0:
                 print("work")
                 point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
                 PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
-
+                pulse_list = plc.PLC_cov_vRead()
                 is_update = 0
                 arg_param = []
                 print("抓取完成，删除")
             else:
-                n += 1
-                if n>5:
-                    n = 0
-                    pulse_L, pulse_H = plc.PLC_cov_vRead()
-
+                # print("no work")
+                # t.sleep(0.1)
+                pulse_list = plc.PLC_cov_vRead()
+                # pulse_queue.put(pulse_list)
+        try:
+            # 尝试无阻塞地放入新参数，丢弃旧参数
+            pulse_queue.put_nowait(pulse_list)
+        except queue.Full:
+            pulse_queue.get_nowait()  # 移除旧参数
+            pulse_queue.put_nowait(pulse_list)
+        print(pulse_list)
                 # print("don't work")
                 # t.sleep(0.1)
 class fish_grab():
     def __init__(self):
         self.last_points_list = []
         self.fish_list = []
+        self.pulse_now_L = 0
+        self.pulse_now_H = 0
 
 
 
@@ -235,7 +242,7 @@ class fish_grab():
         #print(f"获取最新鱼群列表{self.fish_list},\n鱼数量{self.fish_list.__len__()}")
         return 1
 
-    def fish_list_update(self,scov_v,scov_vlast,pulse_now_L,pulse_now_H):
+    def fish_list_update(self):
         current_time = time.time()
         print(f"当前时间{current_time}")
         print(len(self.fish_list))
@@ -248,12 +255,17 @@ class fish_grab():
             for fi in range(fish_total):
                 fish = self.fish_list[fi]
 
+                try:
+                    [self.pulse_now_L, self.pulse_now_H] = pulse_queue.get(block=True, timeout=5)  # 阻塞等待最新参数
+
+                except queue.Empty:
+                    pass
                 self.fish_list[fi] = (
                     fish[0],  #0 x
                     fish[1],  #1 y
                     fish[2],  #2 theta
                     fish[3],  #3 time
-                    fish[0]+((pulse_now_L - fish[7])+(pulse_now_H - fish[8])*65536)*0.31415926*0.95,  #4 x_n
+                    fish[0]+((self.pulse_now_L - fish[7])+(self.pulse_now_H - fish[8])*65536+150)*0.31415926*1,  #4 x_n
                     # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
                     fish[5],  #5 y_n（保持不变）
                     fish[6],  #6 ct
@@ -264,7 +276,7 @@ class fish_grab():
                 )
 
 
-        return self.fish_list
+
 
     def delete_fish(self, num_fish):
         fish_total= len(self.fish_list)
@@ -296,13 +308,19 @@ class Worker(QObject):
         global points_list
         global is_update
         global arg_param
-        global pulse_L
-        global pulse_H
+
         delete_set = []
         paused_flag =0
         with get_lock:
             mc_restart(plc)
             mc_go_home(plc)
+            pulse_list = plc.PLC_cov_vRead()
+        try:
+            # 尝试无阻塞地放入新参数，丢弃旧参数
+            pulse_queue.put_nowait(pulse_list)
+        except queue.Full:
+            pulse_queue.get_nowait()  # 移除旧参数
+            pulse_queue.put_nowait(pulse_list)
 
         while True:
             with get_lock:
@@ -319,9 +337,9 @@ class Worker(QObject):
                     mc_wait(plc)
                     print("线程结束")
                     break
-                pulse_L, pulse_H = plc.PLC_cov_vRead()
 
-                # print(pulse_L, pulse_H)
+
+
 
             with lock:
                 # t.sleep(0.5)
@@ -339,33 +357,30 @@ class Worker(QObject):
                     with get_lock:
                         mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
             else:
-                with get_lock:
+                fish_group.fish_list_update()
 
-                    # print(fish_group.fish_list)
-                    pulse_L,pulse_H = plc.PLC_cov_vRead()
+                # print(time.time())
+                fish_all = len(fish_group.fish_list)
+                delete_set = []
+                for fish_num in range(fish_all):
 
-                    fish_group.fish_list_update(plc.cov_v, plc.cov_vlast,pulse_L,pulse_H)
-                    # print(time.time())
-                    fish_all = len(fish_group.fish_list)
-                    delete_set = []
-                    for fish_num in range(fish_all):
-                        # plc.PLC_cov_vRead()
-                        # fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-                        print(f"鱼{fish_num}的位置{fish_group.fish_list[fish_num]}")
-                        if fish_group.fish_list[fish_num][4] >750:
-                            delete_set.append(fish_num)
-                        if 0 < fish_group.fish_list[fish_num][4] <= 750:
-                            if len(arg_param) == 1:
-                                continue
-                            print("进行整形")
-                            pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
+                    print(f"鱼{fish_num}的位置{fish_group.fish_list[fish_num]}")
+                    if fish_group.fish_list[fish_num][4] >750:
+                        delete_set.append(fish_num)
+                    if 100 < fish_group.fish_list[fish_num][4] <= 750:
+
+                        if len(arg_param) == 1:
+                            continue
+                        print("进行整形")
+                        pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
+                        with get_lock:
                             arg_param=[pid_set, [fish_group.fish_list[fish_num][4] / 1000, 0.120],
                                          fish_group.fish_list[fish_num][1] + 130, fish_group.fish_list[fish_num][2],
                                          fish_num]
-                            # print(len(arg_param))
+                        # print(len(arg_param))
 
-                            delete_set.append(fish_num)
-                            break
+                        delete_set.append(fish_num)
+                        break
                 for i in range(len(delete_set)):
                     fish_group.delete_fish(delete_set[i])
 
@@ -463,41 +478,3 @@ app = QtWidgets.QApplication(sys.argv)
 MainWindow = MainWindow()
 MainWindow.show()
 sys.exit(app.exec_())
-# while True:
-
-
-    # sys.exit(app.exec_())
-    # time.sleep(0.5)
-    # with lock:
-    #     fish_group.get_points_list(points_list)
-    #     plc.PLC_cov_vRead()
-    #     print(plc.cov_v)
-    #     fish_group.fish_list_update(plc.cov_v,plc.cov_vlast)
-    #     print(f"获取最新鱼群列表{fish_group.fish_list},\n鱼数量{len(fish_group.fish_list)}")
-    #     # print(points_list)
-    #     if len(fish_group.fish_list) ==0:
-    #         print("没有鱼")
-    #         mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
-    #
-    #
-    #     else:
-    #         print(fish_group.fish_list)
-    #         fish_all= len(fish_group.fish_list)
-    #         delete_set=[]
-    #
-    #         for fish_num in range(fish_all):
-    #             plc.PLC_cov_vRead()
-    #             fish_group.fish_list_update(plc.cov_v, plc.cov_vlast)
-    #             if fish_group.fish_list[fish_num][4] > 900:
-    #                 fish_group.delete_fish(fish_num)
-    #                 break
-    #             if 100 < fish_group.fish_list[fish_num][4] < 850 :
-    #
-    #                 print("进行整形")
-    #                 pid_set = errormach_follow(plc.x_p, fish_group.fish_list[fish_num][4])
-    #                 arg_param =[pid_set, [fish_group.fish_list[fish_num][4]/1000, 0.120],  fish_group.fish_list[fish_num][1]+120,  fish_group.fish_list[fish_num][2],fish_num]
-    #                 is_update = 1
-    #                 fish_group.delete_fish(fish_num)
-    #                 break
-    #
-    #         fish_group.delete_fish(fish_num)
