@@ -23,19 +23,72 @@ points_list = []
 lock = threading.Lock()
 get_lock = threading.Lock()
 arg_param = []
-is_update=0
 
-pulse_list=[0,0]
-pulse_queue = queue.Queue(maxsize=1)
+
+class PulseCollector:
+    def __init__(self, plc, queue_size=1):
+        self.plc = plc
+        self.main_queue = queue.Queue(maxsize=queue_size)
+        self.camera_queue = queue.Queue(maxsize=queue_size)
+        self.running = False
+        self.thread = None
+
+    def start(self):
+        self.running = True
+        self.thread = threading.Thread(target=self._collect_pulses, daemon=True)
+        self.thread.start()
+
+    def stop(self):
+        self.running = False
+
+    def _collect_pulses(self):
+        while self.running:
+            try:
+                with get_lock:
+                    pulse_data = self.plc.PLC_cov_vRead()
+
+                # 统一处理两个队列
+                for q in [self.main_queue, self.camera_queue]:
+                    try:
+                        q.put_nowait(pulse_data)
+                    except queue.Full:
+                        try:
+                            # 移除旧数据并放入新数据
+                            q.get_nowait()
+                            q.put_nowait(pulse_data)
+                        except queue.Empty:
+                            # 理论上不会执行，因为队列已满
+                            print(f"队列 {q} 意外为空")
+
+                time.sleep(0.01)  # 控制采集频率
+            except Exception as e:
+                print(f"脉冲采集错误: {e}")
+
+    def get_latest_pulse(self):
+        """获取主队列的最新脉冲（非阻塞）"""
+        try:
+            while True:
+                pulse = self.main_queue.get_nowait()
+        except queue.Empty:
+            pass
+        return pulse
+
+    def get_camera_pulse(self):
+        """获取相机队列的脉冲（非阻塞）"""
+        try:
+            return self.camera_queue.get_nowait()
+        except queue.Empty:
+            return None
 plc = plc_connect()
-plc.PLC_cov_vRead()
-mc_go_home(plc)
-mc_move_to_point(plc,point_set=[0, 0, 0, None, None])
-#window标志位
+pulse_collector = PulseCollector(plc)
+pulse_collector.start()
+with get_lock:
+    mc_go_home(plc)
+    mc_move_to_point(plc,point_set=[0, 0, 0, None, None])
 
 
 # 海康相机图像获取线程
-def hik_camera_get():
+def hik_camera_get(pulse_collector):
     # 获得设备信息
     global camera_image
     global points_list
@@ -157,12 +210,17 @@ def hik_camera_get():
             ts = time.time()
             # img_copy = cv2.imread(f"./images/image_{i}.jpg", cv2.IMREAD_COLOR)
             img_copy = cv2.imread(f"./images/image.jpg", cv2.IMREAD_COLOR)
-            [pulse_now_L, pulse_now_H] = pulse_queue.get()
-            with lock:
 
-                points_list = recognize_ellipses(img_copy, ts, [],pulse_now_L, pulse_now_H)
+            pulse = pulse_collector.get_camera_pulse()  # 使用专用队列
+            if pulse is not None:
+                pulse_now_L, pulse_now_H = pulse
+                with lock:
+                    points_list = recognize_ellipses(img_copy, ts, [], pulse_now_L, pulse_now_H)
+            else:
+                print("警告: 无可用脉冲数据，跳过当前帧")
+                continue  # 跳过当前帧处理
 
-                print(f"计算完成,结果{points_list}")
+            print(f"计算完成,结果{points_list}")
 
             # 注释point_offset = (Y_world, X_world, angle, ts)
 
@@ -178,39 +236,39 @@ def mc_follow_line_thread(PLC):##PID参数pid_pram: p i d dt max_acc max_vel  si
     global arg_param
     global pulse_list
     while True:
-
         with get_lock:
+           if len(arg_param)  ==1:
 
-            if len(arg_param) >0:
-                print("work")
-                point_set = [0, arg_param[2], arg_param[3], 0, 0]  # [x,y,zf,none,none]
-                PLC.PLC_RAS(point_set, 2, arg_param[0], arg_param[1])
-                pulse_list = plc.PLC_cov_vRead()
-                is_update = 0
-                arg_param = []
-                print("抓取完成，删除")
-            else:
-                # print("no work")
-                # t.sleep(0.1)
-                pulse_list = plc.PLC_cov_vRead()
-                # pulse_queue.put(pulse_list)
-        try:
-            # 尝试无阻塞地放入新参数，丢弃旧参数
-            pulse_queue.put_nowait(pulse_list)
-        except queue.Full:
-            pulse_queue.get_nowait()  # 移除旧参数
-            pulse_queue.put_nowait(pulse_list)
-        print(pulse_list)
-                # print("don't work")
-                # t.sleep(0.1)
+
 class fish_grab():
-    def __init__(self):
+    def __init__(self, pulse_collector):
         self.last_points_list = []
+        self.pulse_collector = pulse_collector
         self.fish_list = []
-        self.pulse_now_L = 0
-        self.pulse_now_H = 0
+        self.lock = threading.Lock()
+        self.pulse_event = threading.Event()
+        self.running = False
+        self.update_thread = None
 
+    def start(self):
+        self.running = True
+        self.update_thread = threading.Thread(target=self._update_loop, daemon=True)
+        self.update_thread.start()
 
+    def stop(self):
+        self.running = False
+
+    def _update_loop(self):
+        while self.running:
+            # 等待新脉冲事件
+            self.pulse_event.wait(timeout=0.05)  # 最多等待50ms
+            self.pulse_event.clear()
+            # print("更新123456")
+            # 获取最新脉冲并更新鱼群位置
+            pulse = self.pulse_collector.get_latest_pulse()
+            print(pulse_collector.queue.qsize())
+            if pulse is not None:
+                self._update_fish_positions(pulse)
 
     def get_points_list(self,points_list):
         if points_list is not self.last_points_list:
@@ -242,41 +300,28 @@ class fish_grab():
         #print(f"获取最新鱼群列表{self.fish_list},\n鱼数量{self.fish_list.__len__()}")
         return 1
 
-    def fish_list_update(self):
+    def _update_fish_positions(self, pulse):
+        print("更新鱼群位置")
         current_time = time.time()
-        print(f"当前时间{current_time}")
-        print(len(self.fish_list))
-        if len(self.fish_list) ==0:
-            print("没有鱼")
-            return 1
-        else:
-            fish_total= len(self.fish_list)
+        fish_list = self.fish_list
+        if not fish_list:
+            return
 
-            for fi in range(fish_total):
-                fish = self.fish_list[fi]
+        pulse_L, pulse_H = pulse
+        pi_coeff = 0.31415926
+        offset = 150 * pi_coeff
+        delta_coeff = pi_coeff * 1
 
-                try:
-                    [self.pulse_now_L, self.pulse_now_H] = pulse_queue.get(block=True, timeout=5)  # 阻塞等待最新参数
+        updated = []
+        for fish in fish_list:
+            # 修正解包结构，确保与 get_points_list 一致（10个元素）
+            x, y, theta, t, x_prev, y_n, ct, pl, ph, state = fish
+            delta_L = pulse_L - pl
+            delta_H = (pulse_H - ph) * 65536
+            x_n = x + (delta_L + delta_H + offset) * delta_coeff
+            updated.append((x, y, theta, t, x_n, y_n, ct, pl, ph, 0))  # 保持10个元素
 
-                except queue.Empty:
-                    pass
-                self.fish_list[fi] = (
-                    fish[0],  #0 x
-                    fish[1],  #1 y
-                    fish[2],  #2 theta
-                    fish[3],  #3 time
-                    fish[0]+((self.pulse_now_L - fish[7])+(self.pulse_now_H - fish[8])*65536+150)*0.31415926*1,  #4 x_n
-                    # fish[4] + (scov_v * 0.5 + scov_vlast * 0.5) * (current_time - fish[6]) * 1000,  # x_n
-                    fish[5],  #5 y_n（保持不变）
-                    fish[6],  #6 ct
-                    fish[7],  #6 pulse_start_L
-                    fish[8],  #8 pulse_start_H
-                    current_time,  # 8更新时间
-                    0  # state
-                )
-
-
-
+        self.fish_list = updated
 
     def delete_fish(self, num_fish):
         fish_total= len(self.fish_list)
@@ -288,6 +333,14 @@ class fish_grab():
         else:
             print(f"索引 {num_fish} 超出范围，无法删除")
         return 1
+
+    def update_pulse(self, pulse):
+        with self.lock:
+            self.latest_pulse = pulse  # 外部线程调用此方法更新脉冲值
+
+    def notify_new_pulse(self):
+        """由脉冲收集器调用，通知有新脉冲"""
+        self.pulse_event.set()
 class Worker(QObject):
     def __init__(self):
         super().__init__()
@@ -314,13 +367,7 @@ class Worker(QObject):
         with get_lock:
             mc_restart(plc)
             mc_go_home(plc)
-            pulse_list = plc.PLC_cov_vRead()
-        try:
-            # 尝试无阻塞地放入新参数，丢弃旧参数
-            pulse_queue.put_nowait(pulse_list)
-        except queue.Full:
-            pulse_queue.get_nowait()  # 移除旧参数
-            pulse_queue.put_nowait(pulse_list)
+
 
         while True:
             with get_lock:
@@ -357,7 +404,7 @@ class Worker(QObject):
                     with get_lock:
                         mc_move_to_point(plc, point_set=[0, 0, 0, None, None])
             else:
-                fish_group.fish_list_update()
+
 
                 # print(time.time())
                 fish_all = len(fish_group.fish_list)
@@ -392,7 +439,10 @@ class Worker(QObject):
 #相机
 camera_mode = 'hik'  # 'test':测试模式,'hik':海康相机,'video':USB相机（videocapture）
 
-fish_group = fish_grab()
+fish_group = fish_grab(pulse_collector)
+fish_group.start()
+
+
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -461,7 +511,7 @@ camera_image = None
 if camera_mode == 'test':
     camera_image = cv2.imread('images/11041.jpg')
 elif camera_mode == 'hik':
-    thread_camera = threading.Thread(target=hik_camera_get, daemon=True)
+    thread_camera = threading.Thread(target=hik_camera_get, args=(pulse_collector, ),daemon=True)
     thread_camera.start()
 
 
